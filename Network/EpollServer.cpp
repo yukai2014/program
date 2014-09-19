@@ -66,7 +66,7 @@ bool ReceiveData(epoll_event event, char *buf)
 	}
 	else if (recv_count == 0){	// client exit normally will make epoll readable but can read nothing	-9.17
 		printf("received nothing . Client close normally\n");
-		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event.data.fd, NULL);
+		epoll_ctl(event.data.fd, EPOLL_CTL_DEL, event.data.fd, NULL);
 		return false;
 	}
 
