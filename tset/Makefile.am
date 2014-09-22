@@ -1,7 +1,8 @@
 bin_PROGRAMS = tset
 
 tset_SOURCES = 		false_sharing.cpp \
-	select.cpp 		tset.cpp
+	select.cpp 		tset.cpp	\
+	MemoryLayoutOfClass.h
 	
 test_CPPFLAGS = -fPIC \
 -I${BOOST_HOME}/boost/serialization 

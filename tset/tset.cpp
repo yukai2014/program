@@ -1,10 +1,10 @@
-//============================================================================
-// Name        : tset.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
-//============================================================================
+/*
+ * test.cpp
+ *
+ *  Created on: 2014-9-20
+ *      Author: imdb
+ */
+
 
 #include <iostream>
 #include <malloc.h>
@@ -32,20 +32,23 @@
 #include <boost/archive/text_oarchive.hpp>
 
 #include <boost/archive/tmpdir.hpp>
-
+#include "MemoryLayoutOfClass.h"
 //#include "testsf.cpp"
 
 using namespace std;
 //#pragmapack(4)
 class kong{
-	virtual void fsdf();
+public:
+	virtual void PrintNum() const{
+		cout<<"kong"<<endl;
+	};	// 8	-->8
 	inline void abc(){
 		a = 1;
 	}
-	int a;
-	char b;
-	double c;
-	int ba;
+	int a;	// 4	-->12
+	char b;	// 1	-->16
+	double c;// 8	-->24
+	int ba;	// 4	-->32
 };
 
 class bird
@@ -53,14 +56,40 @@ class bird
 public:
 	bird(){
 		num = 1;
-		cout<<"a bird"<<endl;
+//		cout<<"a bird"<<endl;
 	}
-	void PrintNum()
+	virtual void PrintNum()	// 8	-->8
 	{
 		cout<<"bird is "<<num<<endl;
 	}
 private:
+	//	double num;	// 4	-->16
 	int num;
+};
+
+/*
+ * kongbird:
+ * 			vtable* ----> 指向kong 的虚函数表	// 8 --- 8
+ * 			vtable* ----> 指向 bird的虚函数表	// 8 --- 16
+ * 		----------------------- 接下来是kong的成员
+ * 			int a;									// 4	-->20
+ * 			char b;									// 1	-->24
+ * 			double c;								// 8	-->32
+ * 			int ba;									// 4	-->36
+ * 		----------------------- 接下来是bird的成员
+ * 			int num;									// 4 --- 40
+ * 		----------------------- 接下来是bird的成员
+ * 			int temp；								// 4 --- 48
+ *
+ *	如果改num为double， 则sizeof（kongbird）为56
+ */
+class kongbird: public bird, public kong
+{
+private:
+	int temp;
+	void PrintNum() const{
+		cout<<"kb"<<endl;
+	}
 };
 
 class FlyBird: public bird
@@ -153,12 +182,12 @@ void operator>>(istream& is, Node &n)
 Node *pp[10];
 
 Node * newNode(int i)
-								{
+		{
 	Node *p1= (Node *)malloc(sizeof(Node));
 	p1->type = 1;
 	pp[i] = p1;
 	return p1;
-								};
+		};
 
 int xx = 5;
 int f() {
@@ -280,36 +309,69 @@ void  aaa(vector<CC*>& ccc){
 }
 
 int main() {
-	{	// 小端字节序，比如a = 4， 在内存中就是存为 0x04,0x00，0x00，0x00
-		int a = 4;
-		int *p = &a;
-		char *cp = (char*)p;
-		cout<<(int)((char*)p)[0]<<(int)cp[1]<<(int)cp[2]<<(int)cp[3]<<endl;
-		char *buffer = (char*)malloc(8);
-		*(int*)buffer = a;
-		cout<<(int)buffer[0]<<(int)buffer[1]<<(int)buffer[2]<<(int)buffer[3];
+	{
+		MemeoryLayoutOfClassDemon demon;
+		demon.show();
+	}
+	{
+		{	// 小端字节序，比如a = 0x00000004， 在内存中就是存为 0x04,0x00，0x00，0x00
+			int a = 4;
+			int *p = &a;
+			char *cp = (char*)p;
+			cout<<(int)((char*)p)[0]<<(int)cp[1]<<(int)cp[2]<<(int)cp[3]<<endl;
+			char *buffer = (char*)malloc(8);
+			*(int*)buffer = a;
+			cout<<(int)buffer[0]<<"--"<<(int)buffer[1]<<"--"<<(int)buffer[2]<<"--"<<(int)buffer[3]<<endl;	// 4--0--0--0
+		}
+
+		int kk = 0x01030012;
+		int *pp = &kk;
+		cout<<int(*(((char*)pp)+0))<<"--"<<int(*(((char*)pp)+1))<<"--"<<int(*(((char*)pp)+2))<<"--"<<int(*(((char*)pp)+3))<<endl;	// 18--0--3--1
+		cout<<kk<<endl;		// 16973842
+		cout<<"----"<<endl;
+
+		long i[2];
+		i[0] = 0x0000000200000001;
+		i[1] = 0x0000000200001001;
+		long **p = (long**)&i;
+
+//		cout<<(((int*)p)+k)<<endl;
+		cout<<int(*(((int*)p)+0))<<"--"<<int(*(((int*)p)+1))<<"--"<<int(*(((int*)p)+2))<<"--"<<int(*(((int*)p)+3))<<endl;	// 1--2--4097--2
+	}
+	{
+		cout<<"kong:		"<<sizeof(kong)<<endl;
+		cout<<"bird:		"<<sizeof(bird)<<endl;
+		cout<<"kongbird:	"<<sizeof(kongbird)<<endl;
+		//		kongbird kb;
+		bird *p = new kongbird();
+		p->PrintNum();			//子类和基类的虚函数必须一致，包括是否为const，否则仍调用bird的方法，因为子类的虚函数会覆盖另一基类的虚函数
+		//kb.PrintNum();		// 歧义，两个基类都有该虚函数
+				return 0;
 	}
 
+
 	{
-		char *a = "dfsfsdfsdfsdfsd\0";
+		char *a = "dfs";
 		a += 2;
 		string aa;
 		aa = string(a);
-		cout<<aa<<endl;	// “sfsdfsdfsdfsd”
+		cout<<aa.length()<<"--"<<aa<<endl;	// “s”
+		cout<<sizeof(a)<<"--"<<a[3]<<endl;
+		return 0;
 
-//		for (long i = (long)a-200; i < (long)a+3; i++) {
-//						char *t = (char*)i;
-//						printf("%ld:%p:%c\n", i, t, *t);
-//					}
+		//		for (long i = (long)a-200; i < (long)a+3; i++) {
+		//						char *t = (char*)i;
+		//						printf("%ld:%p:%c\n", i, t, *t);
+		//					}
 	}
-/*	{
+	/*	{
 		vector<CC*> ccc;
 		aaa(ccc);
 		cout<<&(ccc.at(0))<<endl;	// 在函数中push指针的类对象仍存在vector中，在push时候重新在堆中复制构造了指向的类对象
 		cout<<&(ccc.at(1))<<endl;	// 地址位于堆中
 	}*/
 
-/*	{
+	/*	{
 		int line = __LINE__;
 		string filename = __FILE__;
 		cout<<"the line is:"<<line<<endl;	//输出当前行
@@ -344,24 +406,24 @@ int main() {
 			printf("initialized1:	%p\n", &initialized1);
 			printf("uninitialized1:	%p\n", &uninitialized1);
 
-//			static char *uninit;		// is NULL
+			//			static char *uninit;		// is NULL
 			static char static_init[] = "abc";
-//			printf("uninit:		%p\n", uninit);
+			//			printf("uninit:		%p\n", uninit);
 			printf("static_init:	%p\n", static_init);
 		}
 		{
-//			static
+			//			static
 			char *const_init = "abc";	// 文字常量存储区
 			printf("const_init:		%p\n", const_init);
 			printf("abc:			%p\n", &"abc");
 			printf("def:			%p\n", &"def");
 			// 接下来是查看这一片内存存放的内容
-//			"abc";
-//			"def";
-//			for (long i = (long)&"abc"-10; i < (long)&"def"+3; i++) {
-//				char *t = (char*)i;
-//				printf("%ld:%p:%c\n", i, t, *t);
-//			}
+			//			"abc";
+			//			"def";
+			//			for (long i = (long)&"abc"-10; i < (long)&"def"+3; i++) {
+			//				char *t = (char*)i;
+			//				printf("%ld:%p:%c\n", i, t, *t);
+			//			}
 		}
 		{// malloc 分配哪里的内存,很大和很小的分别为两个地方的内存，默认小余128kB内存使用brk（）在堆中分配，大内存使用mmap（）在映射区分配内存
 			int *p1 = (int *)malloc(100*sizeof(int));		// 堆
@@ -383,8 +445,7 @@ int main() {
 		CPU_ZERO(&cpu_set);		// 在标准库中
 	}
 	{
-		cout<<sizeof(kong)<<endl;
-		int32_t a;
+		cout<<"kong: "<<sizeof(kong)<<endl;
 	}
 
 	/*
@@ -442,12 +503,12 @@ int main() {
 		//计时
 		timeval start, end;
 		gettimeofday(&start, NULL);
-		clock_t s = clock();
+//		clock_t s = clock();
 		//		sleep(1);
 		int i = 1000000;
 		while (--i) {};
 		gettimeofday(&end, NULL);	// 可用
-		clock_t e = clock();
+//		clock_t e = clock();
 
 		//		cout<<"start "<<start.tv_sec*1000000+start.tv_usec<<"; end: "<<end.tv_sec*1000000+end.tv_usec<<endl;
 
@@ -504,13 +565,13 @@ int main() {
 		//		cout<<res==end(a)?"No find":"Find"<<endl;
 	}
 	{
-				ostringstream ostr;
-				ostr<<"hello";
-				insert(ostr, 123);
-				cout<<ostr.str()<<endl;
-//				ostr..clear();	//ss.clear(); //实际上，它并不清空任何内容，它只是重置了流的状态标志而已！
-//				cout<<ostr.str()<<endl;
-				ostr.str("");	//ss.clear(); //清空
+		ostringstream ostr;
+		ostr<<"hello";
+		insert(ostr, 123);
+		cout<<ostr.str()<<endl;
+		//				ostr..clear();	//ss.clear(); //实际上，它并不清空任何内容，它只是重置了流的状态标志而已！
+		//				cout<<ostr.str()<<endl;
+		ostr.str("");	//ss.clear(); //清空
 
 
 	}
@@ -527,11 +588,13 @@ int main() {
 		////		cout<<s<<endl;
 	}
 	//	cout<<"---------------"<<endl;
-	{
-		//		TestForReturnConst t;
-		//		vector<int> v = t.getV();
-		//		cout<<v.empty()<<endl;	// put: 1
-	}
+	//	{
+	//				TestForReturnConst t;
+	//				vector<int> v = t.getV();
+	//				cout<<v.empty()<<endl;	// put: 1
+	//				v.push_back(12);
+	//				cout<<v.at(0)<<endl;		// put: 12
+	//	}
 	//	cout<<"============================="<<endl;
 	{
 		//		int i = 23;
@@ -725,10 +788,10 @@ int main() {
 		//		cout<<bs<<endl;	// put: 00000000000000000000000000001100
 	}
 	{
-		//		cout<<" "<<f()<<endl;	// f() return 5
-		//		int x;
-		//		cout<< (x == (1 && x)) <<endl;	//put: 0
-		//		cout<<x<<endl;	// put: 4236368
+//				cout<<" "<<f()<<endl;	// f() return 5
+//				int x;
+//				cout<< (x == (1 && x)) <<endl;	//put: 0
+//				cout<<x<<endl;	// put: 4236368
 	}
 
 	int i = 3;
