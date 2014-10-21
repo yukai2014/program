@@ -4,10 +4,10 @@ tset_SOURCES = 		false_sharing.cpp \
 	select.cpp 		tset.cpp	\
 	MemoryLayoutOfClass.h
 	
-test_CPPFLAGS = -fPIC \
+test_CPPFLAGS = -fPIC  -g\
 -I${BOOST_HOME}/boost/serialization 
 	
-tset_LDFLAGS = -lpthread -g -lboost_serialization
+tset_LDFLAGS = -lpthread -lboost_serialization
 
 tset_LDADD = \
 	${BOOST_HOME}/stage/lib/libboost_serialization.a \

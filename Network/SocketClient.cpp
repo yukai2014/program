@@ -31,6 +31,7 @@ int main()
 //	server_addr.sin_addr.s_addr = inet_addr("58.198.176.153");
 	server_addr.sin_addr.s_addr = inet_addr("10.11.1.90");
 	server_addr.sin_family = AF_INET;
+
 #ifdef EPOLL
 	server_addr.sin_port = htons(34568);
 	cout<<"set port ok"<<endl;
@@ -38,6 +39,7 @@ int main()
 
 #ifdef SOCKET
 	server_addr.sin_port = htons(34567);
+	cout<<"set port ok"<<endl;
 #endif
 
 	if (connect(client_socket, (sockaddr *)&server_addr, sizeof(server_addr)) < 0){
@@ -56,7 +58,10 @@ int main()
 */
 
 	memset(buf, 0, sizeof(buf));
-	cin.getline(buf, BUF_MAX-1);
+
+//	cin.getline(buf, BUF_MAX-1);
+	strcpy(buf, "hello, world!");
+
 	if (send(client_socket, buf, strlen(buf)+1, 0) <= 0){
 		cout<<"error"<<errno<<": write to server failed. "<<endl;
 		return 0;

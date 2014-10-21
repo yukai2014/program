@@ -71,19 +71,23 @@ bool ReceiveData(epoll_event event, char *buf)
 	}
 
 	sockaddr_in client_addr = fd_to_adddr.at(event.data.fd);
-	Logs::log("receive content:%s\n		------from %s:%d\n", buf, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+	Logs::log("receive content:%s\n		------from %s:%d, fd %d\n", buf, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), event.data.fd);
 	return true;
 }
 
-bool SendMessageBack(int client_fd)
+bool SendMessageBack(int client_fd, char *buff = NULL)
 {
-	char buf[] = "ok, server have received successfully\n";
+	char *buf = "ok, server have received successfully\n";
+	if (buff != NULL)
+		buf = buff;
+
 	int write_count = send(client_fd, buf, strlen(buf), 0);
 	if (write_count <= 0){
 		OUTPUTERROR(" write to client socket failed.");
+		cout<<"----socket fd is "<<client_fd<<endl;
 		return false;
 	}
-	Logs::log("ok, write to client socket successfully\n");
+	Logs::log("ok, write to client socket %d successfully\n", client_fd);
 	return true;
 }
 
@@ -147,6 +151,7 @@ int main()
 		return 0;
 	}
 
+	Logs::log("listening");
 	while(1){
 		if ((ret = epoll_wait(epoll_fd, event_list, CONNECTION_MAX, TIME_OUT)) == -1){
 			OUTPUTERROR(" wait epoll failed. ");
@@ -171,8 +176,9 @@ int main()
 				}
 */
 				// exit abnormally
-				if ((event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP) || !(event_list[i].events & EPOLLIN))
-				{
+				if ((event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)
+//						|| !(event_list[i].events & EPOLLIN)
+						) {
 					sockaddr_in temp = fd_to_adddr.at(event_list[i].data.fd);
 					printf("%s.%d exit abnormally.\n",inet_ntoa(temp.sin_addr), ntohs(temp.sin_port));
 					close(event_list[i].data.fd);
@@ -185,12 +191,36 @@ int main()
 				if (event_list[i].data.fd == listen_fd){
 					AcceptConnection(epoll_fd, listen_fd);
 				}
-				else{
+				else if (event_list[i].events & EPOLLIN) {
 					if (ReceiveData(event_list[i], buf) == true){
-						SendMessageBack(event_list[i].data.fd);
+						/*
+						 * 方案一：直接在这里发送，后面的代码都不用
+						 * SendMessageBack(event_list[i].data.fd);
+						 */
+						epoll_event ev;
+						ev.events = EPOLLET|EPOLLOUT;
+						ev.data.fd = event_list[i].data.fd;
+
+						epoll_ctl(epoll_fd, EPOLL_CTL_MOD, event_list[i].data.fd, &ev);
 //						sleep(1);
 //						SendMessageBack(event_list[i].data.fd);
 					}
+				}
+				else if (event_list[i].events & EPOLLOUT) {
+					/*
+					 * 方案二：必须在ptr指向的结构中包含fd，否则这里获得的data.fd是无效的。		参考自：http://blog.csdn.net/ljx0305/article/details/4065058
+					 * 方案三：在接受时设置data.fd而不是ptr，发送的内容设为全局变量或通过其他方式访问。	参考自：http://www.cppblog.com/API/archive/2013/01/07/197066.html
+					 */
+					Logs::log("fd is %d\n", event_list[i].data.fd);
+//					char *buf = (char*)event_list[i].data.ptr;
+					if (SendMessageBack(event_list[i].data.fd) == false) {
+						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_list[i].data.fd, NULL);
+//						close(event_list[i].data.fd);
+					}
+					struct epoll_event ev;
+					ev.data.fd = event_list[i].data.fd;
+					ev.events = EPOLLIN|EPOLLET;
+					epoll_ctl(epoll_fd, EPOLL_CTL_MOD, event_list[i].data.fd, &ev);
 				}
 			}
 		}//end else

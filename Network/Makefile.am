@@ -3,33 +3,33 @@ bin_PROGRAMS = epserver sserver epclient sclient
 epserver_SOURCES = 		EpollServer.cpp \
 	Logs.h 				
 	
-epserver_CPPFLAGS=-fPIC
+epserver_CPPFLAGS= -g -fPIC
 	
-epserver_LDFLAGS = -g
+#epserver_LDFLAGS =
 
 #######################
 
 
 sserver_SOURCES = 	SocketServer.cpp
 
-sserver_CPPFLAGS=-fPIC
+sserver_CPPFLAGS=-g -fPIC
 	
-sserver_LDFLAGS = -fPIC -g
+#sserver_LDFLAGS =  
 
 #######################
 
 
 epclient_SOURCES = 	SocketClient.cpp
 	
-epclient_CPPFLAGS=-fPIC
+epclient_CPPFLAGS=-g -DEPOLL -fPIC
 	
-epclient_LDFLAGS = -fPIC -D SOCKET -g
+#epclient_LDFLAGS =  
 
 #######################
 
 
-sclient_CPPFLAGS=-fPIC
-
 sclient_SOURCES = 	SocketClient.cpp
+
+sclient_CPPFLAGS= -g -DSOCKET -fPIC
 	
-sclient_LDFLAGS = -D EPOLL -g
+#sclient_LDFLAGS = 

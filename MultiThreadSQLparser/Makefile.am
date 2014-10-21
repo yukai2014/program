@@ -5,6 +5,6 @@ parser_SOURCES = function.cpp \
 	sql.tab.hpp 	sql_node_struct.h \
 	testyu2.cpp
 	
-parser_CPPFLAGS= -fPIC 
+parser_CPPFLAGS= -g -fPIC
 	
-parser_LDFLAGS =-lc -lm -lrt -lpthread -g
+parser_LDFLAGS =-lc -lm -lrt -lpthread  

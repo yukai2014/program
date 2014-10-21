@@ -12,7 +12,7 @@
 #include <stdarg.h>
 
 
-#define OUTPUTERROR(a) cout<<"ERROR:"<<strerror(errno)<<"."<<a<<endl
+#define OUTPUTERROR(a) cout<<__FILE__<<":"<<__LINE__<<"ERROR:"<<strerror(errno)<<"."<<a<<endl
 
 #define DEBUG
 
