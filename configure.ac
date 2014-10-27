@@ -10,6 +10,7 @@ AC_CONFIG_FILES([
   Network/Makefile
   SimpleThreadPool/Makefile 
   tset/Makefile 
+  MemoryPool/Makefile
 ])
 AC_OUTPUT
 

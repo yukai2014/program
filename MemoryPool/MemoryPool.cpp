@@ -6,10 +6,11 @@
  */
 #include "MemoryPool.h"
 
-static MemoryPool* MemoryPool::instance_ = NULL;
+MemoryPool* MemoryPool::instance_ = NULL;
 
 MemoryPool* MemoryPool::GetInstance() {
 	if (instance_ == NULL) {
+		LOG("new Memory Pool");
 		return instance_ = new MemoryPool();
 	}
 	else {

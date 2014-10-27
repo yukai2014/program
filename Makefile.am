@@ -1,4 +1,8 @@
 
-SUBDIRS = MultiThreadSQLparser MultiThreadTest Network SimpleThreadPool tset
+noinst_library = libcommon.a
 
-DIST_SUBDIRS = MultiThreadSQLparser MultiThreadTest Network SimpleThreadPool tset
+libcommon_a_SOURCE=Log.h 
+
+SUBDIRS = MultiThreadSQLparser MultiThreadTest Network SimpleThreadPool tset MemoryPool
+
+DIST_SUBDIRS = MultiThreadSQLparser MultiThreadTest Network SimpleThreadPool tset MemoryPool

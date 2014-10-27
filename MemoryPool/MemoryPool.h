@@ -10,6 +10,8 @@
 
 #include <iostream>
 #include <malloc.h>
+
+#include "../Log.h"
 using namespace std;
 
 class MemoryPool
@@ -28,7 +30,7 @@ public:
 	void DestroyMemoryPool();
 
 private:
-	MemoryPool* instance_;
+	static MemoryPool* instance_;
 };
 
 #endif /* MEMORYPOOL_H_ */
