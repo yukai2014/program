@@ -1,7 +1,9 @@
 bin_PROGRAMS = memorypool
 
 memorypool_SOURCES = MemoryPool.cpp \
-	MemoryPool.h	MemoryPoolTest.cpp
+	MemoryPool.h	MemoryPoolTest.cpp \
+	MemoryPoolChunk.cpp MemoryPoolChunk.h \
+	common.h
 	
 memorypool_CPPFLAGS= -g -fPIC
 	

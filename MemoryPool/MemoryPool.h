@@ -10,27 +10,47 @@
 
 #include <iostream>
 #include <malloc.h>
+#include <signal.h>
 
+#include "MemoryPoolChunk.h"
 #include "../Log.h"
 using namespace std;
+
+void Destroy(int signal);
 
 class MemoryPool
 {
 public:
 	static MemoryPool* GetInstance();
 
-	MemoryPool(){}
+	MemoryPool();
 
-	void CreateMemoryPool();
+	void CreateMemoryPool(size_t chunk_size);
 
-	void* k_malloc(unsigned size);
+	/*
+	 * user must memset the memory after calling KMalloc
+	 */
+	void* KMalloc(size_t size);
 
-	void k_free(void *ptr);
+	void* KMallocLarge(size_t size);
+
+//	void KFree(void *ptr);
+
+	void ResetMemoryPool();
 
 	void DestroyMemoryPool();
 
 private:
 	static MemoryPool* instance_;
+
+	size_t chunk_size_;
+
+	MemoryPoolSmallChunk* small_;
+
+	MemoryPoolLargeChunk* large_;
+
+	size_t max_alloc_size_;
+
 };
 
 #endif /* MEMORYPOOL_H_ */
