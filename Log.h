@@ -2,7 +2,7 @@
  * Log.h
  *
  *  Created on: 2014-10-27
- *      Author: imdb
+ *      Author: YuKai
  */
 
 #ifndef LOG_H_

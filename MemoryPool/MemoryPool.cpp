@@ -76,7 +76,7 @@ void* MemoryPool::KMalloc(size_t size) {
 			}
 		}
 	}
-
+	return NULL;
 	// now chunk point to NULL
 
 }

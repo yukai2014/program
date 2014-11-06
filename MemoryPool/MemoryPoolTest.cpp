@@ -53,20 +53,33 @@ int main(){
 	cout<<"-----------reset ok-----------"<<endl;
 	count = 1100;
 	while (count--) {
-			a = (char*)mp->KMalloc(4000);
-			memset(a, 0, sizeof(1000));
-			if (count >= 1080)
-				cout<<static_cast<void*>(a)<<endl;
-		}
-	a = (char*)mp->KMalloc(100 * sizeof(char));
-	cout<<static_cast<void *>(a)<<endl;
-	cout<<a[0]<<"-"<<a[1]<<endl;
-	memset(a, 0, sizeof(char) * 100);
-	cout<<(int)a[0]<<"-"<<(int)a[1]<<endl;
-	a[0] = 'a';
-	a[1] = 'b';
-	cout<<a[0]<<"-"<<a[1]<<endl;
+		a = (char*)mp->KMalloc(4000);
+		memset(a, 0, sizeof(1000));
+		if (count >= 1080)
+			cout<<static_cast<void*>(a)<<endl;
+	}
+	{
+		a = (char*)mp->KMalloc(100 * sizeof(char));
+		cout<<static_cast<void *>(a)<<endl;
+		cout<<a[0]<<"-"<<a[1]<<endl;
+		memset(a, 0, sizeof(char) * 100);
+		cout<<(int)a[0]<<"-"<<(int)a[1]<<endl;
+		a[0] = 'a';
+		a[1] = 'b';
+		cout<<a[0]<<"-"<<a[1]<<endl;
+	}
 	mp->DestroyMemoryPool();
+	mp->ResetMemoryPool();
+	{
+		a = (char*)mp->KMalloc(100 * sizeof(char));
+		cout<<static_cast<void *>(a)<<endl;
+		cout<<a[0]<<"-"<<a[1]<<endl;
+		memset(a, 0, sizeof(char) * 100);
+		cout<<(int)a[0]<<"-"<<(int)a[1]<<endl;
+		a[0] = 'a';
+		a[1] = 'b';
+		cout<<a[0]<<"-"<<a[1]<<endl;
+	}
 	while(1);
 	return 0;
 }

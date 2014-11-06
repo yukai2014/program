@@ -11,7 +11,7 @@ bool MemoryPoolChunk::CheckSpace(size_t size) {
 	char *temp;
 	temp = ALIGN(last_, ALIGN_SIZE);
 	if (end_ - temp < size) {
-		DLOG("The chunk whose first_ is %p have no %d Bytes free space", first_, size);
+//		DLOG("The chunk whose first_ is %p have no %d Bytes free space", first_, size);
 		return false;
 	}
 	return true;
