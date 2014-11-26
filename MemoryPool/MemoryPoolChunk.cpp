@@ -42,6 +42,8 @@ void* MemoryPoolSmallChunk::Allocate(size_t size) {
 	}
 	char *temp = ALIGN(last_, ALIGN_SIZE);
 	last_ = temp + size;
+
+	DLOG("return %p", temp);
 	return (void*)temp;
 }
 

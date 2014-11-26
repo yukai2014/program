@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#define INFO
-#define DEBUG
+//#define INFO
+//#define DEBUG
 
 #define LOGINFO(type) \
 struct timeval tv; \

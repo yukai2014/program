@@ -59,7 +59,7 @@ int main()
 #endif
 	timeval finish_time;
 	gettimeofday(&finish_time, NULL);
-	cout<<" use "<<(double)(finish_time.tv_usec - start_time.tv_usec)/1000+(finish_time.tv_sec - start_time.tv_sec)<<" ms"<<endl;
+	cout<<" use "<<(double)(finish_time.tv_usec - start_time.tv_usec)/1000+(finish_time.tv_sec - start_time.tv_sec)*1000<<" ms"<<endl;
 
 
 //	while(1){

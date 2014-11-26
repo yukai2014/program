@@ -32,6 +32,8 @@ public:
 	 */
 	void* KMalloc(size_t size);
 
+	void* KCalloc(size_t size);
+
 	void* KMallocLarge(size_t size);
 
 //	void KFree(void *ptr);
@@ -42,6 +44,8 @@ public:
 
 private:
 	static MemoryPool* instance_;
+
+	int destroy_time;
 
 	size_t chunk_size_;
 

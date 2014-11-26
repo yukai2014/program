@@ -29,6 +29,7 @@ MemoryPool* MemoryPool::GetInstance() {
 
 MemoryPool::MemoryPool() {
 	signal(SIGINT, Destroy);
+	destroy_time = 0;
 }
 
 void MemoryPool::CreateMemoryPool(size_t chunk_size){
@@ -115,16 +116,28 @@ void* MemoryPool::KMallocLarge(size_t size) {
 	return chunk->Allocate(size);
 }
 
+void* MemoryPool::KCalloc(size_t size) {
+	void *res = NULL;
+	if ((res = KMalloc(size)) != NULL)
+		memset(res, 0, size);
+
+	return res;
+}
+
 
 void MemoryPool::ResetMemoryPool() {
 	MemoryPoolSmallChunk* small_chunk = small_;
 	MemoryPoolLargeChunk* large_chunk = large_;
 	MemoryPoolLargeChunk* temp;
 
+//	struct timeval s, e;
+//	gettimeofday(&s, NULL);
 	while(small_chunk) {
 		small_chunk->Reset();
 		small_chunk = small_chunk->GetNext();
 	}
+//	gettimeofday(&e, NULL);
+//	cout<<" reset small spend "<<(double)(e.tv_usec - s.tv_usec)/1000+(e.tv_sec - s.tv_sec) * 1000<<"ms"<<endl;
 
 	// keep first three chunk, free other
 	int large_num = 0;
@@ -140,10 +153,12 @@ void MemoryPool::ResetMemoryPool() {
 		}
 		++large_num;
 	}
-	LOG("reset memory pool successfully.");
+	LOG("free %d large chunk.reset memory pool successfully.", large_num-3);
 }
 
 void MemoryPool::DestroyMemoryPool() {
+//	printf("\n");
+	DLOG("it is %d time to destroy", ++destroy_time);
 	MemoryPoolLargeChunk* large = large_;
 	MemoryPoolSmallChunk* small = small_;
 	DLOG("large is %p, small is %p", large, small);
@@ -154,6 +169,9 @@ void MemoryPool::DestroyMemoryPool() {
 	int small_count = 0;
 	int large_count = 0;
 
+//	struct timeval start, end;
+//	gettimeofday(&start, NULL);
+
 	while (large) {
 		large_temp = large;
 		large = large->GetNext();
@@ -162,7 +180,11 @@ void MemoryPool::DestroyMemoryPool() {
 		++large_count;
 	}
 	large_ = NULL;
+//
+//	gettimeofday(&end, NULL);
+//	cout<<"free large use "<<(double)(end.tv_usec - start.tv_usec)/1000+(end.tv_sec - start.tv_sec)<<" ms"<<endl;
 
+//	gettimeofday(&start, NULL);
 	while (small) {
 		small_temp = small;
 		small = small->GetNext();
@@ -171,7 +193,9 @@ void MemoryPool::DestroyMemoryPool() {
 		++small_count;
 	}
 	small_ = NULL;
+//	gettimeofday(&end, NULL);
+//	cout<<"free small use "<<(double)(end.tv_usec - start.tv_usec)/1000+(end.tv_sec - start.tv_sec)<<" ms"<<endl;
 
-	LOG("\nDestroy memory pool successfully. %d small chunk are freed, %d large chunk are freed.", small_count, large_count);
+	LOG("Destroy memory pool successfully. %d small chunk are freed, %d large chunk are freed.", small_count, large_count);
 }
 

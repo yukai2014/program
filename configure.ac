@@ -6,7 +6,6 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
   Makefile
   MultiThreadSQLparser/Makefile 
-  MultiThreadTest/Makefile
   Network/Makefile
   SimpleThreadPool/Makefile 
   tset/Makefile 
