@@ -13,9 +13,12 @@
 #include <malloc.h>
 #include <assert.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "../Log.h"
 #include "common.h"
+
+#define THREAD_SAFE
 
 class MemoryPoolChunk {
 public:
@@ -27,11 +30,16 @@ public:
 	bool CheckSpace(size_t size);
 	inline void Reset() {
 		last_ = first_;
+		free_length_ = end_ - last_;
 	}
 protected:
 	char* first_;
 	char* last_;
 	char* end_;
+	int free_length_;
+#ifdef THREAD_SAFE
+	pthread_mutex_t lock_;
+#endif
 };
 
 class MemoryPoolSmallChunk: public MemoryPoolChunk {

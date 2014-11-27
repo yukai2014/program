@@ -139,6 +139,7 @@ void MemoryPool::ResetMemoryPool() {
 //	gettimeofday(&e, NULL);
 //	cout<<" reset small spend "<<(double)(e.tv_usec - s.tv_usec)/1000+(e.tv_sec - s.tv_sec) * 1000<<"ms"<<endl;
 
+//	gettimeofday(&s, NULL);
 	// keep first three chunk, free other
 	int large_num = 0;
 	while (large_chunk) {
@@ -153,7 +154,10 @@ void MemoryPool::ResetMemoryPool() {
 		}
 		++large_num;
 	}
-	LOG("free %d large chunk.reset memory pool successfully.", large_num-3);
+//	gettimeofday(&e, NULL);
+//	cout<<" reset large spend "<<(double)(e.tv_usec - s.tv_usec)/1000+(e.tv_sec - s.tv_sec) * 1000<<"ms"<<endl;
+
+	LOG("free %d large chunk.reset memory pool successfully.", large_num-3 > 0? large_num-3: 0);
 }
 
 void MemoryPool::DestroyMemoryPool() {
