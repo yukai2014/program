@@ -7,4 +7,6 @@ memorypool_SOURCES = MemoryPool.cpp \
 	
 memorypool_CPPFLAGS= -g -fPIC
 	
-memorypool_LDFLAGS =-lc -lm -lrt -lpthread  
+memorypool_LDFLAGS =-lc -lm -lrt -lpthread
+
+LDADD = ../common/libcommon.a

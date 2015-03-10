@@ -72,7 +72,7 @@ void* MemoryPool::KMalloc(size_t size) {
 				return new_chunk->Allocate(size);
 			}
 			else{
-				ELOG("new chunk init fails. no memory!");
+				ELOG("new small chunk init fails. no memory!");
 				return NULL;
 			}
 		}
@@ -104,6 +104,7 @@ void* MemoryPool::KMallocLarge(size_t size) {
 				}
 			}
 			else {
+				ELOG("new large chunk init fails. no memory!");
 				return NULL;
 			}
 			break;

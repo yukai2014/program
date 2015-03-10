@@ -37,6 +37,8 @@ void* GetMemory(void* arg) {
 }
 
 
+int lock_time = 0;
+
 int main(){
 	struct timeval start, end;
 
@@ -45,7 +47,7 @@ int main(){
 	mp->CreateMemoryPool(chunk_size);
 	mp = MemoryPool::GetInstance();
 	mp = MemoryPool::GetInstance();
-	/*{
+	{// testing multi-thread
 		char *p[1000];
 		memset(p, 0, sizeof(p));
 		cout<<"p[0]:"<<(void*)p[0]<<" p:"<<(void*)p<<endl;
@@ -101,7 +103,7 @@ int main(){
 		mp->DestroyMemoryPool();
 		return 0;
 	}
-	 */
+
 	/*
 	{
 		char *a = NULL;
@@ -170,31 +172,38 @@ int main(){
 		}
 	}
 	 */
-
-	{
-		int k = 100;
+/*
+	{	test malloc/malloc-free/kmalloc performance
+		int k = 10000;
 		double kmalloc_time = 0;
 		double malloc_time = 0;
 		double malloc_free_time = 0;
 		double destroy_time = 0;
 		double reset_time = 0;
 		char c[] = "1";
+		bool error = false;
 
 		while (k--)
 		{
+			int peer_count = 100;
 			char *m;
 			srand(10 * time(NULL));
 			int i;
 			int size[10000];
 			memset(size, 0, sizeof(size));
-			for (i = 0; i < 10000; ++i) {
+			for (i = 0; i < peer_count; ++i) {
 				size[i] = rand() % 1000 +10;
 			}
 
 			{
 				gettimeofday(&start, NULL);
-				for (i = 0; i < 10000; ++i) {
+				for (i = 0; i < peer_count; ++i) {
 					m = (char*)malloc(size[i] * sizeof(char));
+					if (m == NULL) {
+						ELOG("malloc error");
+						error = true;
+						break;
+					}
 					strcpy(m, c);
 					free(m);
 				}
@@ -206,12 +215,13 @@ int main(){
 
 			{
 				gettimeofday(&start, NULL);
-				for (i = 0; i < 10000; ++i) {
+				for (i = 0; i < peer_count; ++i) {
 					m = (char*)mp->KMalloc(size[i] * sizeof(char));
-//					if (m == NULL) {
-//						ELOG("kmalloc error");
-//						break;
-//					}
+					if (m == NULL) {
+						ELOG("kmalloc error");
+						error = true;
+						break;
+					}
 					//			cout<<(void*)m<<endl;
 					strcpy(m, c);
 				}
@@ -219,7 +229,7 @@ int main(){
 				//		cout<<"KMalloc use "<<(double)(end.tv_usec - start.tv_usec)/1000+(end.tv_sec - start.tv_sec) * 1000<<" ms"<<endl;
 				kmalloc_time += (double)(end.tv_usec - start.tv_usec)/1000+(end.tv_sec - start.tv_sec) * 1000;
 			}
-				//		cout<<"destroy memory pool"<<endl;
+
 			{
 				gettimeofday(&start, NULL);
 				mp->ResetMemoryPool();
@@ -229,10 +239,11 @@ int main(){
 			}
 			{
 				gettimeofday(&start, NULL);
-				for (i = 0; i < 10000; ++i) {
+				for (i = 0; i < peer_count; ++i) {
 					m = (char*)malloc(size[i] * sizeof(char));
 					if (m == NULL) {
 						cout<<"malloc error"<<endl;
+						error = true;
 						break;
 					}
 					strcpy(m, c);
@@ -243,18 +254,23 @@ int main(){
 
 
 		}
-
+		//		cout<<"destroy memory pool"<<endl;
 		gettimeofday(&start, NULL);
 		mp->DestroyMemoryPool();
 		gettimeofday(&end, NULL);
 		//		cout<<"Destroy use "<<(double)(end.tv_usec - start.tv_usec)/1000+(end.tv_sec - start.tv_sec) * 1000<<" ms"<<endl;
 		destroy_time += (double)(end.tv_usec - start.tv_usec)/1000+(end.tv_sec - start.tv_sec) * 1000;
 
+		if (error)
+			cout<<"error!!!!!!!!!!!!"<<endl;
+
+		cout<<"lock "<<lock_time<<" times"<<endl;
 		cout<<"malloc:"<<malloc_time<<endl;
 		cout<<"malloc_free:"<<malloc_free_time<<endl;
 		cout<<"kmalloc:"<<kmalloc_time<<endl;
 		cout<<"reset:"<<reset_time<<endl;
 		cout<<"destroy:"<<destroy_time<<endl;
 	}
+	*/
 	return 0;
 }

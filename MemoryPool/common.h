@@ -22,4 +22,11 @@
 
 #define DEFAULT_CHUNK_SIZE 2*1024*1024 // Byte
 
+#define THREAD_SAFE
+
+//#define SPIN_LOCK
+
+//#define MY_SPIN_LOCK
+
+
 #endif /* COMMON_H_ */

@@ -14,11 +14,20 @@
 #include <assert.h>
 #include <string.h>
 #include <pthread.h>
+#include <linux/kernel.h>
+//#include <linux/spinlock.h>
 
-#include "../Log.h"
+//#include <spinlock_types.h>
+//#include <linux/rwlock.h>
+
+
+
+//#include <asm/spinlock.h>
+//#include <asm/system.h>
+
+#include "../common/Log.h"
 #include "common.h"
 
-#define THREAD_SAFE
 
 class MemoryPoolChunk {
 public:
@@ -37,8 +46,15 @@ protected:
 	char* last_;
 	char* end_;
 	int free_length_;
-#ifdef THREAD_SAFE
+#if defined(THREAD_SAFE)
 	pthread_mutex_t lock_;
+#elif defined(SPIN_LOCK)
+	spinlock_t lock_;
+#elif defined(MY_SPIN_LOCK)
+public:
+	static int is_lock;
+#else
+
 #endif
 };
 

@@ -26,7 +26,15 @@ public:
 		va_list arg;
 		va_start(arg, format);
 		vprintf(format, arg);
-		printf("\n");
+		va_end(arg);
+	#endif
+	}
+
+	static void elog(const char *format, ...){
+	#ifdef DEBUG
+		va_list arg;
+		va_start(arg, format);
+		vprintf(format, arg);
 		va_end(arg);
 	#endif
 	}

@@ -6,29 +6,49 @@
  */
 
 #include "MemoryPoolChunk.h"
+extern int lock_time;
+
+#ifdef MY_SPIN_LOCK
+int MemoryPoolChunk::is_lock = 0;
+#endif
 
 bool MemoryPoolChunk::CheckSpace(size_t size) {
-/*
+	/*
 	char *temp;
 	temp = ALIGN(last_, ALIGN_SIZE);
 	if (end_ - temp < size) {
 //		DLOG("The chunk whose first_ is %p have no %d Bytes free space", first_, size);
 		return false;
 	}
-	*/
-#ifdef THREAD_SAFE
+	 */
+#if defined(THREAD_SAFE)
 	pthread_mutex_lock(&lock_);
+#elif defined(SPIN_LOCK)
+	spin_lock(&lock_);
+#elif defined(MY_SPIN_LOCK)
+	while(MemoryPoolChunk::is_lock);
+	__sync_fetch_and_add(&MemoryPoolChunk::is_lock, 1);
 #endif
+	++lock_time;
+
 	if (free_length_ > size + ALIGN_SIZE) {	// apply ALIGN_SIZE size free memory for aligning
 		free_length_ -= size;
-#ifdef THREAD_SAFE
+#if defined(THREAD_SAFE)
 		pthread_mutex_unlock(&lock_);
+#elif defined(SPIN_LOCK)
+		spin_unlock(&lock_);
+#elif defined(MY_SPIN_LOCK)
+		__sync_fetch_and_sub(&MemoryPoolChunk::is_lock, 1);
 #endif
 		return true;
 	}
 	else {
-#ifdef THREAD_SAFE
+#if defined(THREAD_SAFE)
 		pthread_mutex_unlock(&lock_);
+#elif defined(SPIN_LOCK)
+		spin_unlock(&lock_);
+#elif defined(MY_SPIN_LOCK)
+		__sync_fetch_and_sub(&MemoryPoolChunk::is_lock, 1);
 #endif
 		return false;
 	}
@@ -48,8 +68,12 @@ bool MemoryPoolSmallChunk::Init() {
 	end_ = first_ + chunk_size_;
 	next_ = NULL;
 	free_length_ = chunk_size_;
-#ifdef THREAD_SAFE
+#if defined(THREAD_SAFE)
 	pthread_mutex_init(&lock_, NULL);
+#elif defined(SPIN_LOCK)
+	spin_lock_init(&lock_);
+#elif defined(MY_SPIN_LOCK)
+	MemoryPoolChunk::is_lock = 0;
 #endif
 
 	LOG("init ok. first_ is %p, last_ is %p, end_ is %p, next_ is %p", first_, last_, end_, next_);
@@ -64,15 +88,28 @@ void* MemoryPoolSmallChunk::Allocate(size_t size) {
 		ELOG("allocate fails.");
 		return NULL;
 	}
-	*/
-#ifdef THREAD_SAFE
-		pthread_mutex_lock(&lock_);
+	 */
+#if defined(THREAD_SAFE)
+	pthread_mutex_lock(&lock_);
+#elif defined(SPIN_LOCK)
+	spin_lock(&lock_);
+#elif defined(MY_SPIN_LOCK)
+	while(MemoryPoolChunk::is_lock);
+	__sync_fetch_and_add(&MemoryPoolChunk::is_lock, 1);
 #endif
+	++lock_time;
+	//	int inc = ALIGN(size, ALIGN_SIZE);
+	//	__sync_add_and_fetch(last_, inc);
+
 	char *temp = last_;
 	last_ = ALIGN(temp + size, ALIGN_SIZE);
 	free_length_ = end_ - last_;
-#ifdef THREAD_SAFE
-		pthread_mutex_unlock(&lock_);
+#if defined(THREAD_SAFE)
+	pthread_mutex_unlock(&lock_);
+#elif defined(SPIN_LOCK)
+	spin_unlock(&lock_);
+#elif defined(MY_SPIN_LOCK)
+	__sync_fetch_and_sub(&MemoryPoolChunk::is_lock, 1);
 #endif
 
 	DLOG("return %p", temp);
@@ -91,8 +128,12 @@ bool MemoryPoolLargeChunk::Init() {
 	end_ = first_ + chunk_size_;
 	next_ = NULL;
 	free_length_ = chunk_size_;
-#ifdef THREAD_SAFE
+#if defined(THREAD_SAFE)
 	pthread_mutex_init(&lock_, NULL);
+#elif defined(SPIN_LOCK)
+	spin_lock_init(&lock_);
+#elif defined(MY_SPIN_LOCK)
+	MemoryPoolChunk::is_lock = 0;
 #endif
 	LOG("init ok. first_ is %p, last_ is %p, end_ is %p, next_ is %p", first_, last_, end_, next_);
 	return true;
@@ -104,14 +145,23 @@ void* MemoryPoolLargeChunk::Allocate(size_t size) {
 		return NULL;
 	}
 
-#ifdef THREAD_SAFE
-		pthread_mutex_lock(&lock_);
+#if defined(THREAD_SAFE)
+	pthread_mutex_lock(&lock_);
+#elif defined(SPIN_LOCK)
+	spin_lock(&lock_);
+#elif defined(MY_SPIN_LOCK)
+	while(MemoryPoolChunk::is_lock);
+	__sync_fetch_and_add(&MemoryPoolChunk::is_lock, 1);
 #endif
 	char *r = last_;
 	last_ += size;
 	free_length_ = end_ - last_;
-#ifdef THREAD_SAFE
-		pthread_mutex_unlock(&lock_);
+#if defined(THREAD_SAFE)
+	pthread_mutex_unlock(&lock_);
+#elif defined(SPIN_LOCK)
+	spin_unlock(&lock_);
+#elif defined(MY_SPIN_LOCK)
+	__sync_fetch_and_sub(&is_lock, 1);
 #endif
 	return (void*)r;
 }

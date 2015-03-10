@@ -13,7 +13,9 @@
 #include <queue>
 #include <semaphore.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "Logs.h"
+#include "../common/Log.h"
 
 using namespace std;
 

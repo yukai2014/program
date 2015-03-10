@@ -13,7 +13,7 @@
 #include <signal.h>
 
 #include "MemoryPoolChunk.h"
-#include "../Log.h"
+#include "../common/Log.h"
 using namespace std;
 
 void Destroy(int signal);

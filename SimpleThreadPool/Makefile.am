@@ -9,6 +9,8 @@ threadpoolyk_CPPFLAGS=-fPIC -g -Dyk
 	
 threadpoolyk_LDFLAGS = -lpthread
 
+threadpoolyk_LDADD = ../common/libcommon.a
+
 threadpoolzl_SOURCES = 		Logs.h \
 	SimpleThreadPoolTest.cpp \
 	ThreadPool.cpp 		ThreadPool.h \

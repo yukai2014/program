@@ -12,7 +12,7 @@
 #include "ThreadPool.h"
 #include <unistd.h>
 #include <sys/syscall.h>
-//#define __USE_GNU		//启用CPU_ZERO等相关的宏
+#define __USE_GNU		//启用CPU_ZERO等相关的宏
 
 
 ThreadPool::ThreadPool(){
@@ -26,7 +26,8 @@ ThreadPool::~ThreadPool(){
 bool ThreadPool::Thread_Pool_init(int thread_count_in_pool_){
 	bool success = true;
 	thread_count = thread_count_in_pool_;
-	free_thread_count = thread_count;
+//	free_thread_count = thread_count;	// bug?
+	free_thread_count = 0;
 	undo_task_count = 0;
 
 	pthread_mutex_init(&free_thread_count_lock, NULL);
@@ -48,6 +49,7 @@ bool ThreadPool::Thread_Pool_init(int thread_count_in_pool_){
 		}
 		++free_thread_count;
 	}
+	assert(free_thread_count == thread_count);
 	return success;
 }
 
@@ -83,7 +85,9 @@ void *ThreadPool::thread_exec(void *arg){
 			if (task->end)	//it means destory this thread
 				break;
 
+			Logs::log("thread (id=%ld,offset=%lx) in thread pool is executing..\n", syscall(__NR_gettid), pthread_self());
 			(*(task->func))(task->arg);
+			Logs::log("thread (id=%ld,offset=%lx) in thread pool finished executing..\n", syscall(__NR_gettid), pthread_self());
 
 			Task::destroy_task(task);		//TODO: consider whether destroy task
 			task = NULL;
@@ -129,7 +133,7 @@ void *ThreadPool::thread_exec_with_cond(void *arg){
 
 void ThreadPool::bind_cpu(){
 	//将该子线程的状态设置为detached,则该线程运行结束后会自动释放所有资源,不要使父线程因为调用pthread_join而阻塞
-//	pthread_detach(pthread_self());
+	pthread_detach(pthread_self());
 
 	static volatile int current_cpu = 0;
 	int cpu_count = sysconf(_SC_NPROCESSORS_CONF);
@@ -140,10 +144,12 @@ void ThreadPool::bind_cpu(){
 	CPU_SET(insert_cpu, &mask);
 	int ret = pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask);
 	if (ret == -1){
-		OUTPUTERROR("bind cpu failed.");
+		ELOG("thread %ld bind cpu failed,ret = %d. %s\n", syscall(__NR_gettid), ret, strerror(errno));
 	}
-	Logs::log("thread setaffinity tid=%ld ret=%d cpu=%ld start=%ld end=%ld",
-			syscall(__NR_gettid), ret, insert_cpu, 0, cpu_count);
+	else {
+		Logs::log("thread (tid=%ld offset=%lx) stiffened cpu=%ld (start=%ld end=%ld)\n",
+			syscall(__NR_gettid), pthread_self(), insert_cpu, 0, cpu_count);
+	}
 }
 
 void ThreadPool::destroy_pool(ThreadPool *tp){
@@ -165,5 +171,6 @@ void ThreadPool::destroy_pool(ThreadPool *tp){
 	pthread_mutex_destroy(&tp->undo_task_count_lock);
 	pthread_mutex_destroy(&tp->task_queue_lock);
 
+	delete tp->thread_list_;
 }
 
