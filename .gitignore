@@ -5,3 +5,5 @@ Default
 .project
 .settings
 bin
+build
+*.settings*

@@ -14,6 +14,11 @@
 //#define INFO
 //#define DEBUG
 
+/*
+ * TODO: change Define to function in order to decrease code size
+ * take multi-thread into account in case of a sentence being split into multiple lines
+ */
+
 #define LOGINFO(type) \
 struct timeval tv; \
 struct tm *tm; \
