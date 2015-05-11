@@ -83,7 +83,7 @@ static int getCurrentSocketAffility(){
  * get the next cpu index in socket specified by socket_index
  */
 static int GetNextCPUinSocket(int socket_index) {
-	static int cur[MAX_CPU_NUM] = {0};	// indicate current CPU in every node
+	static volatile int cur[MAX_CPU_NUM] = {0};	// indicate current CPU in every node
 
 	bitmask* bm = numa_allocate_cpumask();
 	numa_bitmask_clearall(bm);
@@ -92,7 +92,7 @@ static int GetNextCPUinSocket(int socket_index) {
 	assert(socket_index < getNumberOfSockets() && socket_index >= 0
 			&& "node_index_ is unavailable");
 	if (numa_node_to_cpus(socket_index, bm) != 0) {
-		Logs::elog("ERROR:%s",strerror(errno));
+		ThreadPoolLogging::elog("ERROR:%s",strerror(errno));
 		assert(false && "numa_node_to_cpus() failed");
 	}
 	int cpu_index = __sync_fetch_and_add(&(cur[socket_index]), 1)%getNumberOfCpus();
@@ -103,6 +103,13 @@ static int GetNextCPUinSocket(int socket_index) {
 	numa_free_cpumask(bm);
 	return cpu_index;
 	assert(false);
+}
+
+static int GetNextSocket() {
+	static volatile int index = 0;
+	int socket_num = GetNextSocket();
+	int socket_index = (__sync_fetch_and_add(&index, 1))%socket_num;
+	return socket_index;
 }
 
 #endif /* SIMPLETHREADPOOL_CPUSCHEDULER_H_ */
