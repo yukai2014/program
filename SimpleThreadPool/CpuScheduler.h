@@ -92,7 +92,7 @@ static int GetNextCPUinSocket(int socket_index) {
 	assert(socket_index < getNumberOfSockets() && socket_index >= 0
 			&& "node_index_ is unavailable");
 	if (numa_node_to_cpus(socket_index, bm) != 0) {
-		ThreadPoolLogging::elog("ERROR:%s",strerror(errno));
+		Logs::elog("ERROR:%s",strerror(errno));
 		assert(false && "numa_node_to_cpus() failed");
 	}
 	int cpu_index = __sync_fetch_and_add(&(cur[socket_index]), 1)%getNumberOfCpus();
