@@ -12,24 +12,29 @@
 #include <iostream>
 #include <sys/time.h>
 #include <unistd.h>
+#include "CpuScheduler.h"
+
+#define yk
 #ifdef yk
 //#include "SimpleThreadPool/ThreadPool.h"
 #include "ThreadPool.h"
 #endif
 
-#ifdef zl
-//#include "SimpleThreadPool/Thread_Pool.h"
-#include "Thread_Pool.h"
-#endif
+
 
 using namespace std;
 
-const int thread_count = 5;
+const int thread_count = 6;
 
 void func(void *a){
 	int num = *(int *)a;
-	while (num--);
-	cout<<"^";
+//	while (num--);
+	cout<<num<<endl;
+}
+
+void ShowSocketAndCpu(void *no_means) {
+	cout<<"Current cpu is: "<<getCurrentCpuAffility()<<"\t"
+			<<"Current node is: "<<getCurrentSocketAffility()<<endl;
 }
 
 int main()
@@ -41,22 +46,29 @@ int main()
 	cout<<"start"<<endl;
 #ifdef yk
 	ThreadPool *tp = new ThreadPool();
-	tp->Thread_Pool_init(thread_count);
-	while (task_count--){
-		tp->add_task(&func, &num);
+	if (tp->ThreadPoolInit(thread_count) == 0) {
+		cout<<"init failed"<<endl;
 	}
-	ThreadPool::destroy_pool(tp);
+	while (task_count--){
+		tp->AddTask(&func, &num);
+//		tp->Add
+	}
+	ThreadPool::DestroyPool(tp);
+
+//	usleep(3000000);
+	cout<<"==========================="<<endl;
+	if (tp->ThreadPoolInit(thread_count) == 0) {
+		cout<<"init failed"<<endl;
+	}
+	task_count = 10;
+	int node_num = getNumberOfSockets();
+	int node = 0;
+	for(int i = 0; i < task_count; ++i) {
+		tp->AddTastInSocket(ShowSocketAndCpu, NULL, (node++)%node_num);
+	}
+	ThreadPool::DestroyPool(tp);
 #endif
 
-#ifdef zl
-	Thread_Pool *tp = new Thread_Pool();
-	tp->Thread_Pool_init(thread_count, task_count);
-	while (task_count--){
-		tp->Thread_Pool_add(&func, &num);
-	}
-	Thread_Pool::destroy(tp);
-//	while(1);
-#endif
 	timeval finish_time;
 	gettimeofday(&finish_time, NULL);
 	cout<<" use "<<(double)(finish_time.tv_usec - start_time.tv_usec)/1000+(finish_time.tv_sec - start_time.tv_sec)*1000<<" ms"<<endl;
