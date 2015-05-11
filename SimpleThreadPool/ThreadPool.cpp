@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
+//#define UNBLOCKED_JOIN	// cannot open, otherwise results in unknow behavior
 
 ThreadPool::ThreadPool(){
 
@@ -53,7 +54,6 @@ bool ThreadPool::ThreadPoolInit(int thread_count_in_pool){
 	return success;
 }
 
-//TODO： 可以把f与a封装为一个类对象，比如Task，不同的任务可以继承Task，Task中有run函数，Task由智能指针管理销毁
 void ThreadPool::AddTask(Task *t){
 	pthread_mutex_lock(&task_queue_lock_);
 	task_queue_.push(t);
@@ -80,7 +80,6 @@ void ThreadPool::AddTastInSocket(void_function f, void *a, int socket_index) {
 void *ThreadPool::ThreadExec(void *arg){
 	ThreadPool *thread_pool = (ThreadPool*)arg;
 	Task *task = NULL;
-
 	thread_pool->BindCpu();
 
 	// every thread execute a endless loop, waiting for task, and exit when receive a task with end member of 'true'
@@ -95,69 +94,27 @@ void *ThreadPool::ThreadExec(void *arg){
 		pthread_mutex_unlock(&(thread_pool->task_queue_lock_));
 
 		if (task != NULL){
-//			if (task->end())	//it means destory this thread
-//				break;
-
 			Logs::log("thread (id=%ld,offset=%lx) in thread pool is executing..\n", syscall(__NR_gettid), pthread_self());
-//			(*(task->func))(task->arg);
 			task->Run();
 			Logs::log("thread (id=%ld,offset=%lx) in thread pool finished executing..\n", syscall(__NR_gettid), pthread_self());
-
-//			Task::DestroyTask(task);		//TODO: consider whether destroy task
 			delete task;
 			task = NULL;
 		}
-
-//		sem_post(&task_sem);
 	}
 	pthread_exit(NULL);
 	return NULL;
 }
-/*
-void *ThreadPool::thread_exec_with_cond(void *arg){
-	ThreadPool *thread_pool = (ThreadPool*)arg;
-	Task *task = new Task();
-
-	while (1){
-		pthread_mutex_lock(&cond_lock);
-		while (free_thread_count == 0){
-			pthread_cond_wait(&free_thread_cond, &cond_lock);
-		}
-
-		pthread_mutex_lock(&free_thread_count_lock);
-		--free_thread_count;
-		pthread_mutex_unlock(&free_thread_count_lock);
-
-		pthread_mutex_unlock(&cond_lock);
-
-		pthread_mutex_lock(&task_queue_lock);
-		if (!thread_pool->task_queue_.empty()){
-			task = thread_pool->task_queue_.pop();
-		}
-		pthread_mutex_unlock(&task_queue_lock);
-
-		(*(task->func))(task->args);
-
-		pthread_mutex_lock(&free_thread_count_lock);
-		++free_thread_count;
-		pthread_mutex_unlock(&free_thread_count_lock);
-	}
-
-}
-*/
 
 void ThreadPool::BindCpu(){
+#ifdef UNBLOCKED_JOIN
 	//将该子线程的状态设置为detached,则该线程运行结束后会自动释放所有资源,不要使父线程因为调用pthread_join而阻塞
-//	pthread_detach(pthread_self());
+	pthread_detach(pthread_self());
+#endif
 
 	static volatile int current_cpu = 0;
 	int cpu_count = sysconf(_SC_NPROCESSORS_CONF);
 	int insert_cpu = __sync_fetch_and_add(&current_cpu, 1) % cpu_count;
 
-//	cpu_set_t mask;
-//	CPU_ZERO(&mask);
-//	CPU_SET(insert_cpu, &mask);
-//	int ret = pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask);
 	int ret = setCpuAffility(insert_cpu);
 	if (ret == -1){
 		ELOG("thread %ld bind cpu failed,ret = %d. %s\n", syscall(__NR_gettid), ret, strerror(errno));
@@ -173,13 +130,14 @@ void ThreadPool::DestroyPool(ThreadPool *tp){
 	for (int i = 0; i < tp->thread_count_; ++i){	// send destory task to every thread
 		tp->AddDestroyTask();
 	}
+#ifndef UNBLOCKED_JOIN
 	for (int i = 0; i < tp->thread_count_; ++i){
 		pthread_join(tp->thread_list_[i], NULL);
 	}
+#endif
 	while (!tp->task_queue_.empty()){
 		Task *temp = tp->task_queue_.front();
 		tp->task_queue_.pop();
-//		Task::DestroyTask(temp);	//TODO: consider whether destroy task
 		delete temp;
 	}
 

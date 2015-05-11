@@ -11,37 +11,28 @@
 #include "CpuScheduler.h"
 #include "Logs.h"
 typedef void (*void_function)(void *);
-const int MAX_CPU_NUM = 1000;
 
 class Task{
 public:
 //	Task() = default;
-//	Task(void_function f, void *a, bool e):func_(f),arg_(a),end_(e){}
 	Task(void_function f, void *a):func_(f),arg_(a){}
 	virtual ~Task(){}
 	virtual void Run() {
 		(*func_)(arg_);
 	}
 
-	static void DestroyTask(Task *task){
-		// todo:the arg has no specified type
-		//			delete task->arg;
-
+	static inline void DestroyTask(Task *task){
 		delete task;
 	};
 
-//	bool end() {return end_; }
-
 protected:
 	void_function func_;	// pointer to function
-	void *arg_;						// the parameter of function
-//	bool end_;						// whether exit thread
+	void *arg_;				// the parameter of function
 };
 
 class NumaSensitiveTask: public Task {
 public:
 //	NumaSensitiveTask(){};
-//	NumaSensitiveTask(void_function f, void *a, bool e, int node_index):Task(f, a, e), node_index_(node_index){}
 	NumaSensitiveTask(void_function f, void *a, int node_index):
 		Task(f, a), node_index_(node_index){}
 	virtual ~NumaSensitiveTask() throw() {};
@@ -51,7 +42,6 @@ public:
 
 private:
 	int node_index_;
-	static int cur[MAX_CPU_NUM];	// indicate current CPU in every node
 };
 
 class DestroyTask: public Task {

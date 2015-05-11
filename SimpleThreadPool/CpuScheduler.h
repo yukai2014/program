@@ -11,7 +11,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include <stdio.h>
+//#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -20,6 +20,9 @@
 #include <numa.h>
 #include <assert.h>
 #include <errno.h>
+#include "Logs.h"
+
+const int MAX_CPU_NUM = 1000;
 
 /* get number of sockets on this machine */
 static int getNumberOfSockets(){
@@ -75,8 +78,30 @@ static int getCurrentSocketAffility(){
 	return getSocketAffility(current_cpu);
 }
 
+/*
+ * no-locking support for multi-thread
+ * get the next cpu index in socket specified by socket_index
+ */
 static int GetNextCPUinSocket(int socket_index) {
-//	int new_node_cur = new int[getNumberOfSockets()];
+	static int cur[MAX_CPU_NUM] = {0};	// indicate current CPU in every node
+
+	bitmask* bm = numa_allocate_cpumask();
+	numa_bitmask_clearall(bm);
+
+	// get next CPU in specified node and bind to it
+	assert(socket_index < getNumberOfSockets() && socket_index >= 0
+			&& "node_index_ is unavailable");
+	if (numa_node_to_cpus(socket_index, bm) != 0) {
+		Logs::elog("ERROR:%s",strerror(errno));
+		assert(false && "numa_node_to_cpus() failed");
+	}
+	int cpu_index = __sync_fetch_and_add(&(cur[socket_index]), 1)%getNumberOfCpus();
+	while (numa_bitmask_isbitset(bm, cpu_index) != 1){
+		cpu_index = __sync_fetch_and_add(&(cur[socket_index]), 1)%getNumberOfCpus();
+	}
+
+	numa_free_cpumask(bm);
+	return cpu_index;
 	assert(false);
 }
 
