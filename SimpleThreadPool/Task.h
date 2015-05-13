@@ -10,9 +10,10 @@
 
 #include "CpuScheduler.h"
 #include "Logs.h"
-typedef void (*void_function)(void *);
 
 class Task{
+public:
+	typedef void* (*void_function)(void *);
 public:
 //	Task() = default;
 	Task(void_function f, void *a):func_(f),arg_(a){}

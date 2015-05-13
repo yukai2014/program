@@ -18,12 +18,12 @@ using namespace std;
 
 const int thread_count = 6;
 
-void func(void *a){
+void* func(void *a){
 	int num = *(int *)a;
 	cout<<num<<endl;
 }
 
-void ShowSocketAndCpu(void *no_means) {
+void* ShowSocketAndCpu(void *no_means) {
 	cout<<"Current cpu is: "<<getCurrentCpuAffility()<<"\t"
 			<<"Current node is: "<<getCurrentSocketAffility()<<endl;
 }
@@ -40,7 +40,7 @@ int main()
 		cout<<"init failed"<<endl;
 	}
 	while (task_count--){
-		tp->AddTask(&func, &num);
+		tp->AddTask(func, &num);
 	}
 	ThreadPool::DestroyPool(tp);
 

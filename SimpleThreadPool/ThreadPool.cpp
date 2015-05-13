@@ -10,6 +10,7 @@
  *
  */
 #include "ThreadPool.h"
+#include "Task.h"
 #include <unistd.h>
 #include <sys/syscall.h>
 

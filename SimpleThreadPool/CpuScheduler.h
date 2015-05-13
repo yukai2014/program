@@ -107,7 +107,7 @@ static int GetNextCPUinSocket(int socket_index) {
 
 static int GetNextSocket() {
 	static volatile int index = 0;
-	int socket_num = GetNextSocket();
+	int socket_num = getNumberOfSockets();
 	int socket_index = (__sync_fetch_and_add(&index, 1))%socket_num;
 	return socket_index;
 }

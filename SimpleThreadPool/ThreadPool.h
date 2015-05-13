@@ -15,18 +15,17 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "Logs.h"
-#include "Task.h"
+//#include "Task.h"
 #include "../common/Log.h"
-
 //#define __USE_GNU		//启用CPU_ZERO等相关的宏
-
 using namespace std;
 
-//class Task;
-typedef void (*void_function)(void *);
+class Task;
 
 class ThreadPool
 {
+public:
+	typedef void* (*void_function)(void *);
 public:
 	ThreadPool();
 	virtual ~ThreadPool();
