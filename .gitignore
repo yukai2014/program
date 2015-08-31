@@ -1,10 +1,11 @@
 Default
 缺省值
 .gitignore.swp
-.cproject
-.project
+*.cproject*
+*.project*
 .settings
 bin
 build
-*.settings*
+*/.settings/*
 ar-lib
+*.txt

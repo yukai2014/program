@@ -11,9 +11,10 @@ AC_CONFIG_FILES([
   MultiThreadSQLparser/Makefile 
   Network/Makefile
   SimpleThreadPool/Makefile 
-  tset/Makefile 
+  test/Makefile 
   MemoryPool/Makefile
   readline/Makefile
+  design_pattern/Makefile
 ])
 AC_OUTPUT
 

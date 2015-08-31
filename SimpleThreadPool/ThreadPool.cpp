@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
-//#define UNBLOCKED_JOIN	// cannot open, otherwise results in unknow behavior
+//#define UNBLOCKED_JOIN	// cannot open, otherwise results in unknown behavior
 
 ThreadPool::ThreadPool(){
 

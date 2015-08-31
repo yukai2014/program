@@ -1,3 +1,3 @@
-SUBDIRS =common MultiThreadSQLparser Network SimpleThreadPool tset MemoryPool readline 
+SUBDIRS =common MultiThreadSQLparser Network SimpleThreadPool test MemoryPool readline design_pattern
 
-DIST_SUBDIRS =common MultiThreadSQLparser Network SimpleThreadPool tset MemoryPool readline 
+DIST_SUBDIRS =common MultiThreadSQLparser Network SimpleThreadPool test MemoryPool readline design_pattern

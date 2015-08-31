@@ -32,7 +32,8 @@
 #include <boost/archive/text_oarchive.hpp>
 
 #include <boost/archive/tmpdir.hpp>
-#include "MemoryLayoutOfClass.h"
+
+#include "../test/MemoryLayoutOfClass.h"
 //#include "testsf.cpp"
 
 using namespace std;
