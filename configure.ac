@@ -15,6 +15,7 @@ AC_CONFIG_FILES([
   MemoryPool/Makefile
   readline/Makefile
   design_pattern/Makefile
+  design_pattern/command/Makefile
 ])
 AC_OUTPUT
 

@@ -16,9 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * meyers_singleton_test.cpp
+ * simple_command_runner.cpp
  *
- *  Created on: Aug 31, 2015
+ *  Created on: Sep 1, 2015
  *      Author: yukai
  *		 Email: yukai2014@gmail.com
  * 
@@ -26,22 +26,15 @@
  *
  */
 
+#include "./simple_command_runner.h"
+#include <vector>
 
-#include "./meyers_singleton.h"
-using std::cout;
-using std::endl;
+vector<SimpleCommand*> SimpleCommandRunner::s_command_collection;
 
-int main() {
-  cout << Singleton::instance().get_i() << endl;
-// error! call copy constructor function, which is private
-//  Singleton s = Singleton::instance();
-
-// error!  call operator= function, which is private
-//  Singleton s; s = Singleton::instance();
-  Singleton& s = Singleton::instance();
-  s.set_i(12345);
-  cout << s.get_i() << endl;
-  return 0;
+void SimpleCommandRunner::Run() {
+  for (auto& command : SimpleCommandRunner::s_command_collection) {
+    command->Execute();
+  }
 }
 
 
