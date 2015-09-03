@@ -29,12 +29,14 @@
 #include "./simple_command_runner.h"
 #include <vector>
 
-vector<SimpleCommand*> SimpleCommandRunner::s_command_collection;
+SimpleCommandRunner::SimpleCommandRunner() {
+}
+
+// vector<SimpleCommand*> SimpleCommandRunner::s_command_collection;
 
 void SimpleCommandRunner::Run() {
   for (auto& command : SimpleCommandRunner::s_command_collection) {
     command->Execute();
   }
 }
-
 

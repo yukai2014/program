@@ -31,6 +31,10 @@
 #include "./simple_command.h"
 #include "./simple_command_runner.h"
 
+inline void SimpleCommandRunner::AddCommand(SimpleCommand* command) {
+  SimpleCommandRunner::s_command_collection.push_back(command);
+}
+
 void SimpleCommandTest() {
   cout << endl << "SimpleCommandTest:" << endl;
   SimpleCommandRunner runner;

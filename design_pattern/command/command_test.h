@@ -16,9 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Task.h
+ * command_test.h
  *
- *  Created on: Sep 1, 2015
+ *  Created on: Sep 2, 2015
  *      Author: yukai
  *		 Email: yukai2014@gmail.com
  * 
@@ -26,25 +26,23 @@
  *
  */
 
-#ifndef program_DESIGN_PATTERN_COMMAND_TASK_H_
-#define program_DESIGN_PATTERN_COMMAND_TASK_H_
-namespace yukaiprogram {
+#ifndef program_DESIGN_PATTERN_COMMAND_COMMAND_TEST_H_
+#define program_DESIGN_PATTERN_COMMAND_COMMAND_TEST_H_
 
+
+namespace yukaiprogram {
 namespace designpattern {
 
-/***
- * @brief
- */
-class Task {
- public:
-  virtual void Operate() = 0;
-
- public:
- private:
-};
+void CommandTest();
+void procedure1();
+void procedure2();
+void procedure3();
 
 }  // namespace designpattern
 
+
 }  // namespace yukaiprogram
 
-#endif /* program_DESIGN_PATTERN_COMMAND_TASK_H_ */
+
+
+#endif /* program_DESIGN_PATTERN_COMMAND_COMMAND_TEST_H_ */

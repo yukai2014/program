@@ -16,9 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Task.h
+ * command_test.cpp
  *
- *  Created on: Sep 1, 2015
+ *  Created on: Sep 2, 2015
  *      Author: yukai
  *		 Email: yukai2014@gmail.com
  * 
@@ -26,25 +26,58 @@
  *
  */
 
-#ifndef program_DESIGN_PATTERN_COMMAND_TASK_H_
-#define program_DESIGN_PATTERN_COMMAND_TASK_H_
-namespace yukaiprogram {
+#include "./command_test.h"
 
+#include <unistd.h>
+#include <vector>
+#include "./button.h"
+#include "./check_button.h"
+#include "./task.h"
+#include "./task_runner.h"
+
+using std::vector;
+namespace yukaiprogram {
 namespace designpattern {
 
-/***
- * @brief
- */
-class Task {
- public:
-  virtual void Operate() = 0;
+int Button::s_id;
+TaskRunner TaskRunner::runner;
+vector<Task*> TaskRunner::tasks_;
 
- public:
- private:
-};
+void CommandTest() {
+  CheckButton* b1 = new CheckButton("b1");
+  usleep(1000);
+  CheckButton* b2 = new CheckButton("b2");
+  usleep(1000);
+  CheckButton* b3 = new CheckButton("b3");
+
+  TaskRunner::Add(b1);
+  TaskRunner::Add(b2);
+  TaskRunner::Add(b3);
+  int times = 20;
+  while (times--) {
+    procedure1();
+    procedure2();
+    procedure3();
+    usleep(500);
+  }
+}
+
+void procedure1() {
+  std::cout << "I am doing procedure1" << std::endl;
+  TaskRunner::Run();
+}
+
+void procedure2() {
+  std::cout << "I am doing procedure2" << std::endl;
+  TaskRunner::Run();
+}
+
+void procedure3() {
+  std::cout << "I am doing procedure3" << std::endl;
+  TaskRunner::Run();
+}
 
 }  // namespace designpattern
 
 }  // namespace yukaiprogram
 
-#endif /* program_DESIGN_PATTERN_COMMAND_TASK_H_ */

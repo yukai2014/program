@@ -28,29 +28,54 @@
 
 #ifndef program_DESIGN_PATTERN_COMMAND_TASK_RUNNER_H_
 #define program_DESIGN_PATTERN_COMMAND_TASK_RUNNER_H_
+#include <vector>
+
+#include "./task.h"
+using std::vector;
+namespace yukaiprogram {
+
+namespace designpattern {
 
 /***
  * @brief
  */
 class TaskRunner {
- public:
+ private:
   /**
    * @brief TaskRunner Constructor.
    * @param
    * @details  here is an example (additional)
    */
-  TaskRunner();
+  TaskRunner(){
+  }
   /**
    * @brief TaskRunner Destructor.
    */
-  ~TaskRunner();
-
+  ~TaskRunner() {
+  }
+  TaskRunner(const TaskRunner& r);
+  TaskRunner& operator=(TaskRunner& r);
 
  public:
+  static void Run();
+  static TaskRunner& Instance() {
+    return runner;
+  }
+  static void Add(Task* task) {
+    tasks_.push_back(task);
+  }
 
  private:
+  static TaskRunner runner;
+  static vector<Task*> tasks_;
 };
 
+inline void TaskRunner::Run() {
+  for (auto task : tasks_) {
+    task->Operate();
+  }
+}
+}  // namespace designpattern
 
-
+}  // namespace yukaiprogram
 #endif /* program_DESIGN_PATTERN_COMMAND_TASK_RUNNER_H_ */

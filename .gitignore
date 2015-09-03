@@ -9,3 +9,8 @@ build
 */.settings/*
 ar-lib
 *.txt
+.metadata*
+*Makefile.in
+aclocal*
+auto*
+config.*

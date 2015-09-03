@@ -29,11 +29,15 @@
 
 #include <iostream>
 #include "./meyers_singleton_test.h"
+#include "command/command_test.h"
 #include "command/simple_command_test.h"
+
+using yukaiprogram::designpattern::CommandTest;
 
 int main() {
   MeyersSingletonTest();
   SimpleCommandTest();
+  CommandTest();
   return 0;
 }
 

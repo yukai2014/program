@@ -16,9 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Task.h
+ * check_button.h
  *
- *  Created on: Sep 1, 2015
+ *  Created on: Sep 2, 2015
  *      Author: yukai
  *		 Email: yukai2014@gmail.com
  * 
@@ -26,25 +26,51 @@
  *
  */
 
-#ifndef program_DESIGN_PATTERN_COMMAND_TASK_H_
-#define program_DESIGN_PATTERN_COMMAND_TASK_H_
+#ifndef program_DESIGN_PATTERN_COMMAND_CHECK_BUTTON_H_
+#define program_DESIGN_PATTERN_COMMAND_CHECK_BUTTON_H_
+#include <string>
+
+#include "./task.h"
+
 namespace yukaiprogram {
 
 namespace designpattern {
 
 /***
- * @brief
+ * simulate a button will be pressed randomly
  */
-class Task {
+class CheckButton : public Task {
  public:
-  virtual void Operate() = 0;
+  /**
+   * @brief CheckButton Constructor.
+   * @param
+   * @details  
+   */
+  CheckButton(string name)
+      : b(name) {
+  }
+  /**
+   * @brief CheckButton Destructor.
+   */
+  ~CheckButton() {
+  }
 
  public:
+  void Operate();
  private:
+  Button b;
 };
+
+inline void CheckButton::Operate() {
+  if (b.isPressed() && !b.isHandled()) {
+    std::cout << "now handling with the pressed button(" << b.getId() << ","
+              << b.getName() << ")..." << std::endl;
+    b.setHandled(true);
+  }
+}
 
 }  // namespace designpattern
 
 }  // namespace yukaiprogram
 
-#endif /* program_DESIGN_PATTERN_COMMAND_TASK_H_ */
+#endif /* program_DESIGN_PATTERN_COMMAND_CHECK_BUTTON_H_ */

@@ -31,39 +31,89 @@
 
 #include <iostream>
 #include <string>
+#include "../common/random_timer.h"
+
+
+namespace yukaiprogram {
+
+namespace designpattern {
+
 using std::string;
+using common::RandomTimer;
 
 /***
  * @brief
  */
 class Button {
+//  using common::RandomTimer ;     // error. Using directive can't be in class scope
+
  public:
   /**
    * @brief Button Constructor.
    * @param
    * @details  here is an example (additional)
    */
-  Button(int id, string name)
-      : id(id),
-        name(name),
-        pressed(false),
-        handled(false) {
+  explicit Button(string name)
+      : id_(s_id++),
+        name_(name),
+        pressed_(false),
+        handled_(false),
+        r_timer_(10) {
   }
   /**
    * @brief Button Destructor.
    */
-  ~Button();
+  ~Button() {}
 
+  bool isHandled() const {
+    return handled_;
+  }
 
- public:
+  void setHandled(bool handled) {
+    this->handled_ = handled;
+  }
+
+  bool isPressed() {
+    if (r_timer_.End())
+      pressed_ = true;
+    return pressed_;
+  }
+
+  void setPressed(bool pressed) {
+    this->pressed_ = pressed;
+  }
+
+  int getId() const {
+    return id_;
+  }
+
+  void setId(int id) {
+    id_ = id;
+  }
+
+  const string& getName() const {
+    return name_;
+  }
+
+  void setName(const string& name) {
+    name_ = name;
+  }
 
  private:
-  int id;
-  string name;
-  bool pressed;
-  bool handled;
+  int id_;
+  string name_;
+  bool pressed_;
+  bool handled_;
+
+  RandomTimer r_timer_;
+
+  static int s_id;
 };
 
+
+}  // namespace designpattern
+
+}  // namespace yukaiprogram
 
 
 #endif /* program_DESIGN_PATTERN_COMMAND_BUTTON_H_ */

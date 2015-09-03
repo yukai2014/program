@@ -44,22 +44,18 @@ class SimpleCommandRunner {
    * @param
    * @details  here is an example (additional)
    */
-  SimpleCommandRunner() {}
+  SimpleCommandRunner();
   /**
    * @brief SimpleCommandRunner Destructor.
    */
-  ~SimpleCommandRunner() {}
-
+  ~SimpleCommandRunner() {
+  }
 
  public:
-  static void AddCommand(SimpleCommand* command) {
-    SimpleCommandRunner::s_command_collection.push_back(command);
-  }
-  static void Run();
+  void AddCommand(SimpleCommand* command);
+  void Run();
  private:
-  static vector<SimpleCommand*> s_command_collection;
+  vector<SimpleCommand*> s_command_collection;
 };
-
-
 
 #endif /* program_DESIGN_PATTERN_COMMAND_SIMPLE_COMMAND_RUNNER_H_ */
