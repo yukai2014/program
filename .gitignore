@@ -14,3 +14,9 @@ ar-lib
 aclocal*
 auto*
 config.*
+configure
+depcomp
+install-sh
+ltmain.sh
+missing
+
