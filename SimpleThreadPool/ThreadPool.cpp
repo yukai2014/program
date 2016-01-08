@@ -125,7 +125,7 @@ void ThreadPool::BindCpu() {
   int cpu_count = sysconf(_SC_NPROCESSORS_CONF);
   int insert_cpu = __sync_fetch_and_add(&current_cpu, 1) % cpu_count;
 
-  int ret = setCpuAffinity(insert_cpu);
+  int ret = SetCpuAffinity(insert_cpu);
   if (ret == -1) {
     ELOG("thread %ld bind cpu failed,ret = %d. %s\n", syscall(__NR_gettid), ret,
          strerror(errno));
@@ -133,7 +133,7 @@ void ThreadPool::BindCpu() {
     Logs::log(
         "thread (tid=%ld offset=%lx) bind cpu=%ld, expect binded cpu=%ld "
         "(start=%ld end=%ld)\n",
-        syscall(__NR_gettid), pthread_self(), getCurrentCpuAffinity(),
+        syscall(__NR_gettid), pthread_self(), GetCurrentCpuAffinity(),
         insert_cpu, 0, cpu_count);
   }
 }

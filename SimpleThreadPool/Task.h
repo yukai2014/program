@@ -45,9 +45,9 @@ class CpuSensitiveTask : public Task {
  public:
   CpuSensitiveTask(void_function f, void *a, int cpu_index)
       : Task(f, a), cpu_index_(cpu_index) {
-    if (cpu_index_ < 0 || cpu_index_ >= getNumberOfCpus())
+    if (cpu_index_ < 0 || cpu_index_ >= GetNumberOfCpus())
       Logs::elog("CPU index %d is over range, expect 0 to %d ", cpu_index_,
-                 getNumberOfCpus());
+                 GetNumberOfCpus());
   }
 
   virtual void Run();

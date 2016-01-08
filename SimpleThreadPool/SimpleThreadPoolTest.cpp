@@ -31,8 +31,8 @@ void *func(void *a) {
 }
 
 void *ShowSocketAndCpu(void *no_means) {
-  cout << "Current cpu is: " << getCurrentCpuAffinity() << "\t"
-       << "Current node is: " << getCurrentSocketAffility() << endl;
+  cout << "Current cpu is: " << GetCurrentCpuAffinity() << "\t"
+       << "Current node is: " << GetCurrentSocketAffility() << endl;
 
   int temp = 1;
   while (1) {
@@ -59,7 +59,7 @@ int main() {
   if (tp->ThreadPoolInit(thread_count) == 0) {
     cout << "init failed" << endl;
   }
-  int cpu_num = getNumberOfCpus();
+  int cpu_num = GetNumberOfCpus();
   int cpu = 0;
   for (int i = 0; i < 3; ++i) {
     tp->AddTaskInCpu(ShowSocketAndCpu, NULL, (++cpu) % cpu_num);
@@ -72,7 +72,7 @@ int main() {
     cout << "init failed" << endl;
   }
   task_count = 10;
-  int node_num = getNumberOfSockets();
+  int node_num = GetNumberOfSockets();
   int node = 0;
   for (int i = 0; i < task_count; ++i) {
     tp->AddTaskInSocket(ShowSocketAndCpu, NULL, (node++) % node_num);
