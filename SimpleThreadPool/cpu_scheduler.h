@@ -19,7 +19,7 @@
 #include <numa.h>
 #include <assert.h>
 #include <errno.h>
-#include "Logs.h"
+#include "./logs.h"
 
 const int MAX_CPU_NUM = 1000;
 

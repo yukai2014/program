@@ -18,8 +18,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <iostream>
-#include "CpuScheduler.h"
-#include "ThreadPool.h"
+#include "./cpu_scheduler.h"
+#include "./thread_pool.h"
 using namespace std;
 
 const int thread_count = 6;

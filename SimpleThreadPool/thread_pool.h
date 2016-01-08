@@ -15,7 +15,7 @@
 #include <iostream>
 #include <queue>
 #include "../common/Log.h"
-#include "Logs.h"
+#include "./logs.h"
 // #define __USE_GNU		//启用CPU_ZERO等相关的宏
 using namespace std;
 

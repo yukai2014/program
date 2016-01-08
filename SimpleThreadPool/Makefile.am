@@ -1,11 +1,11 @@
 bin_PROGRAMS = threadpoolyk 
 #threadpoolzl
 
-threadpoolyk_SOURCES = 		Logs.h \
+threadpoolyk_SOURCES = 		logs.h \
 	SimpleThreadPoolTest.cpp \
-	ThreadPool.cpp 		ThreadPool.h \
-	Task.h				Task.cpp \
-	CpuScheduler.h
+	thread_pool.cpp 		thread_pool.h \
+	task.h				task.cpp \
+	cpu_scheduler.h
 	
 threadpoolyk_CPPFLAGS=-fPIC -g -O0 -Dyk
 	

@@ -8,8 +8,8 @@
 #ifndef SIMPLETHREADPOOL_TASK_H_
 #define SIMPLETHREADPOOL_TASK_H_
 
-#include "CpuScheduler.h"
-#include "Logs.h"
+#include "./cpu_scheduler.h"
+#include "./logs.h"
 
 class Task {
  public:
