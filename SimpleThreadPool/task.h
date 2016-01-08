@@ -16,12 +16,12 @@ class Task {
   typedef void *(*void_function)(void *);
 
  public:
-  //	Task() = default;
+  // Task() = default;
   Task(void_function f, void *a) : func_(f), arg_(a) {}
   virtual ~Task() {}
   virtual void Run() { (*func_)(arg_); }
 
-  static inline void DestroyTask(Task *task) { delete task; };
+  static inline void DestroyTask(Task *task) { delete task; }
 
  protected:
   void_function func_;  // pointer to function
@@ -58,7 +58,7 @@ class CpuSensitiveTask : public Task {
 
 class DestroyTask : public Task {
  public:
-  DestroyTask() : Task(NULL, NULL){};
+  DestroyTask() : Task(NULL, NULL) {}
   ~DestroyTask() throw() {}
   void Run() {
     Logs::log("pthread_exit...\n");
