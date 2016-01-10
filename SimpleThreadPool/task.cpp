@@ -7,6 +7,7 @@
 
 #include "./task.h"
 
+#include <iostream>
 #include <vector>
 // #define SPECIFY_CPU
 
@@ -44,14 +45,23 @@ void NumaSensitiveTask::BindSocket(int node_index) {}
 
 void CpuSensitiveTask::Run() {
   vector<int> old_cpu = GetCurrentCpuAffinity();
+  std::cout << "before setting, Current cpu is: ";
+  for (auto it : GetCurrentCpuAffinity()) std::cout << it << "\t";
+  std::cout << std::endl;
   if (false == SetCpuAffinity(cpu_index_)) {
     Logs::elog("failed to set affinity with CPU: ");
     for (int i = 0; i < cpu_index_.size(); ++i)
       Logs::elog("%d ", cpu_index_[i]);
     Logs::elog("\n");
   }
+  std::cout << "after setting, Current cpu is: ";
+  for (auto it : GetCurrentCpuAffinity()) std::cout << it << "\t";
+  std::cout << std::endl;
   Task::Run();
 
   // restore old binding
   SetCpuAffinity(old_cpu);
+  std::cout << "after restoring, Current cpu is: ";
+  for (auto it : GetCurrentCpuAffinity()) std::cout << it << "\t";
+  std::cout << std::endl;
 }

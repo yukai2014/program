@@ -22,7 +22,7 @@
 ThreadPool::ThreadPool() {}
 
 ThreadPool::~ThreadPool() {
-  if (thread_list_ != NULL) DestroyPool(this);
+  if (thread_list_ != NULL) Destroy(this);
 }
 
 bool ThreadPool::Init(int thread_count_in_pool) {
@@ -120,7 +120,8 @@ void *ThreadPool::ThreadExec(void *arg) {
 
 void ThreadPool::BindCpu() {
 #ifdef UNBLOCKED_JOIN
-  // 将该子线程的状态设置为detached,则该线程运行结束后会自动释放所有资源,不要使父线程因为调用pthread_join而阻塞
+  // 将该子线程的状态设置为detached,则该线程运行结束后会自动释放所有资源,
+  // 不要使父线程因为调用pthread_join而阻塞
   pthread_detach(pthread_self());
 #endif
 
@@ -141,7 +142,7 @@ void ThreadPool::BindCpu() {
   }
 }
 
-void ThreadPool::DestroyPool(ThreadPool *tp) {
+void ThreadPool::Destroy(ThreadPool *tp) {
   // destroy every thread by sending destroy task to everyone
   for (int i = 0; i < tp->thread_count_; ++i) {
     tp->AddDestroyTask();
@@ -162,6 +163,5 @@ void ThreadPool::DestroyPool(ThreadPool *tp) {
   pthread_mutex_destroy(&tp->undo_task_count_lock_);
   pthread_mutex_destroy(&tp->task_queue_lock_);
 
-  delete tp->thread_list_;
-  tp->thread_list_ = NULL;
+  DeletePtr(tp->thread_list_);
 }

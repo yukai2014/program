@@ -40,7 +40,7 @@ class ThreadPool {
   void AddTaskInSocket(void_function f, void *a, int socket_index);
   void AddTaskInCpu(void_function f, void *arg, int cpu_index);
   void AddDestroyTask();
-  static void DestroyPool(ThreadPool *tp);
+  void Destroy(ThreadPool *tp);
 
  private:
   void AddTask(Task *t);

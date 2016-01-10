@@ -70,7 +70,14 @@ class CpuSensitiveTask : public Task {
       }
     }
   }
-
+  CpuSensitiveTask(void_function f, void *a, int cpu_index) : Task(f, a) {
+    if (cpu_index < 0 || cpu_index >= GetNumberOfCpus()) {
+      Logs::elog("CPU index %d is over range, expect 0 to %d ", cpu_index,
+                 GetNumberOfCpus());
+      assert(false);
+    }
+    cpu_index_.push_back(cpu_index);
+  }
   virtual void Run();
 
  private:

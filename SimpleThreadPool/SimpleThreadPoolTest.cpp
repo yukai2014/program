@@ -37,10 +37,10 @@ void *ShowSocketAndCpu(void *no_means) {
   for (auto it : GetCurrentSocketAffility()) cout << it << "\t";
   cout << endl;
 
-  int temp = 1;
-  while (1) {
-    temp += temp % 10;
-  }
+  //  int temp = 1;
+  //  while (1) {
+  //    temp += temp % 10;
+  //  }
 }
 
 int main() {
@@ -49,7 +49,8 @@ int main() {
   timeval start_time;
   gettimeofday(&start_time, NULL);
   cout << "start" << endl;
-
+  cout << "NUMA is " << (numa_available() >= 0) ? "available" : "unavailable";
+  cout << endl;
   {
     pthread_t p;
     pthread_create(&p, NULL, ShowSocketAndCpu, NULL);
@@ -64,7 +65,7 @@ int main() {
     tp->AddTask(ShowSocketAndCpu, NULL);
     sleep(1);
   }
-  ThreadPool::DestroyPool(tp);
+  tp->Destroy(tp);
 
   cout << "===========================" << endl;
   if (tp->Init(thread_count) == 0) {
@@ -77,7 +78,7 @@ int main() {
     sleep(1);
   }
 
-  ThreadPool::DestroyPool(tp);
+  tp->Destroy(tp);
   // usleep(3000000);
   cout << "===========================" << endl;
   if (tp->Init(thread_count) == 0) {
@@ -90,7 +91,7 @@ int main() {
     tp->AddTaskInSocket(ShowSocketAndCpu, NULL, (node++) % node_num);
     sleep(1);
   }
-  ThreadPool::DestroyPool(tp);
+  tp->Destroy(tp);
 
   timeval finish_time;
   gettimeofday(&finish_time, NULL);
