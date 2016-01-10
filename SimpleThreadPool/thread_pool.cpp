@@ -25,7 +25,7 @@ ThreadPool::~ThreadPool() {
   if (thread_list_ != NULL) DestroyPool(this);
 }
 
-bool ThreadPool::ThreadPoolInit(int thread_count_in_pool) {
+bool ThreadPool::Init(int thread_count_in_pool) {
   bool success = true;
   thread_count_ = thread_count_in_pool;
   free_thread_count_ = 0;
@@ -37,7 +37,8 @@ bool ThreadPool::ThreadPoolInit(int thread_count_in_pool) {
 
   sem_init(&undo_task_sem_, 0, 0);  // init semaphore
 
-  thread_list_ = (pthread_t *)malloc(thread_count_in_pool * sizeof(pthread_t));
+  thread_list_ = static_cast<pthread_t *>(
+      malloc(thread_count_in_pool * sizeof(pthread_t)));
   while (!task_queue_.empty()) {
     task_queue_.pop();
   }
@@ -74,6 +75,10 @@ void ThreadPool::AddDestroyTask() {
 }
 
 void ThreadPool::AddTaskInSocket(void_function f, void *a, int socket_index) {
+  if (numa_available() < 0) {
+    Logs::elog("numa_* functions unavailable\n");
+    assert(false);
+  }
   NumaSensitiveTask *task = new NumaSensitiveTask(f, a, socket_index);
   AddTask(task);
 }
@@ -106,8 +111,6 @@ void *ThreadPool::ThreadExec(void *arg) {
       Logs::log(
           "thread (id=%ld,offset=%lx) in thread pool finished executing..\n",
           syscall(__NR_gettid), pthread_self());
-      //      delete task;
-      //      task = NULL;
       DeletePtr(task);
     }
   }
@@ -133,7 +136,7 @@ void ThreadPool::BindCpu() {
     Logs::log(
         "thread (tid=%ld offset=%lx) bind cpu=%ld, expect binded cpu=%ld "
         "(start=%ld end=%ld)\n",
-        syscall(__NR_gettid), pthread_self(), GetCurrentCpuAffinity(),
+        syscall(__NR_gettid), pthread_self(), GetCurrentCpuAffinity()[0],
         insert_cpu, 0, cpu_count);
   }
 }
@@ -151,7 +154,7 @@ void ThreadPool::DestroyPool(ThreadPool *tp) {
   while (!tp->task_queue_.empty()) {
     Task *temp = tp->task_queue_.front();
     tp->task_queue_.pop();
-    delete temp;
+    DeletePtr(temp);
   }
 
   sem_destroy(&tp->undo_task_sem_);

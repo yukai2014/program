@@ -31,8 +31,11 @@ void *func(void *a) {
 }
 
 void *ShowSocketAndCpu(void *no_means) {
-  cout << "Current cpu is: " << GetCurrentCpuAffinity() << "\t"
-       << "Current node is: " << GetCurrentSocketAffility() << endl;
+  cout << "Current cpu is: ";
+  for (auto it : GetCurrentCpuAffinity()) cout << it << "\t";
+  cout << endl << "Current node is: ";
+  for (auto it : GetCurrentSocketAffility()) cout << it << "\t";
+  cout << endl;
 
   int temp = 1;
   while (1) {
@@ -46,29 +49,38 @@ int main() {
   timeval start_time;
   gettimeofday(&start_time, NULL);
   cout << "start" << endl;
+
+  {
+    pthread_t p;
+    pthread_create(&p, NULL, ShowSocketAndCpu, NULL);
+    sleep(5);
+  }
+
   ThreadPool *tp = new ThreadPool();
-  if (tp->ThreadPoolInit(thread_count) == 0) {
+  if (tp->Init(thread_count) == 0) {
     cout << "init failed" << endl;
   }
   while (task_count--) {
-    tp->AddTask(func, &num);
+    tp->AddTask(ShowSocketAndCpu, NULL);
+    sleep(1);
   }
   ThreadPool::DestroyPool(tp);
 
   cout << "===========================" << endl;
-  if (tp->ThreadPoolInit(thread_count) == 0) {
+  if (tp->Init(thread_count) == 0) {
     cout << "init failed" << endl;
   }
   int cpu_num = GetNumberOfCpus();
   int cpu = 0;
   for (int i = 0; i < 3; ++i) {
     tp->AddTaskInCpu(ShowSocketAndCpu, NULL, (++cpu) % cpu_num);
+    sleep(1);
   }
 
   ThreadPool::DestroyPool(tp);
   // usleep(3000000);
   cout << "===========================" << endl;
-  if (tp->ThreadPoolInit(thread_count) == 0) {
+  if (tp->Init(thread_count) == 0) {
     cout << "init failed" << endl;
   }
   task_count = 10;
@@ -76,6 +88,7 @@ int main() {
   int node = 0;
   for (int i = 0; i < task_count; ++i) {
     tp->AddTaskInSocket(ShowSocketAndCpu, NULL, (node++) % node_num);
+    sleep(1);
   }
   ThreadPool::DestroyPool(tp);
 

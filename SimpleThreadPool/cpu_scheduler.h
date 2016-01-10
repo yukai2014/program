@@ -7,6 +7,9 @@
 
 #ifndef SIMPLETHREADPOOL_CPUSCHEDULER_H_
 #define SIMPLETHREADPOOL_CPUSCHEDULER_H_
+#include <vector>
+
+using std::vector;
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -32,21 +35,21 @@ static int GetNumberOfSockets() {
 /* get the total number of cores */
 static int GetNumberOfCpus() { return sysconf(_SC_NPROCESSORS_CONF); }
 
-/* get the id of the cpu running the current thread */
-static int GetCurrentCpuAffinity() {
+/* get the ids of the cpu running the current thread */
+static vector<int> GetCurrentCpuAffinity() {
+  std::vector<int> bind_cpus;
   cpu_set_t mask;
   if (sched_getaffinity(0, sizeof(mask), &mask) < 0) {
     printf("ERROR:%s\n", strerror(errno));
-    assert(false && "can not get cpu affility");
-    return -1;
+    assert(false && "can not get cpu affinity");
+    return bind_cpus;
   }
   for (int i = 0; i < GetNumberOfCpus(); i++) {
     if (CPU_ISSET(i, &mask)) {
-      return i;
+      bind_cpus.push_back(i);
     }
   }
-  assert(false && "can not get cpu affility");
-  return -1;
+  return bind_cpus;
 }
 
 /* bind the current thread on the specified cpu*/
@@ -58,21 +61,43 @@ static bool SetCpuAffinity(int cpu) {
   // sched_setaffinity only bind thread's CPU not process
   if (sched_setaffinity(0, sizeof(mask), &mask) < 0) {
     printf("ERROR:%s\n", strerror(errno));
-    assert(false && "can not set cpu affility");
+    assert(false && "can not set cpu affinity");
+    return false;
+  }
+  return true;
+}
+
+/* bind the current thread on the specified cpus*/
+static bool SetCpuAffinity(vector<int> cpu) {
+  assert(cpu.size() >= 0 && "cpu is unavailable");
+  cpu_set_t mask;
+  CPU_ZERO(&mask);
+  for (int i = 0; i < cpu.size(); ++i) CPU_SET(cpu[i], &mask);
+  // sched_setaffinity only bind thread's CPU not process
+  if (sched_setaffinity(0, sizeof(mask), &mask) < 0) {
+    printf("ERROR:%s\n", strerror(errno));
     return false;
   }
   return true;
 }
 
 /* get the NUMA socket index of the specified thread */
-static int GetSocketAffility(int cpu) {
-  assert(cpu >= 0 && "cpu is unavailable");
-  return numa_node_of_cpu(cpu);
+static vector<int> GetSocketAffility(vector<int> cpu) {
+  assert(cpu.size() > 0 && "cpu is unavailable");
+  vector<int> sockets;
+  int node;
+  for (int i = 0; i < cpu.size(); ++i) {
+    if (-1 != (node = numa_node_of_cpu(cpu[i])))
+      sockets.push_back(node);
+    else
+      assert(false && "value in cpu is invalid");
+  }
+  return sockets;
 }
 
 /* get the NUMA socket index of the current thread */
-static int GetCurrentSocketAffility() {
-  int current_cpu = GetCurrentCpuAffinity();
+static vector<int> GetCurrentSocketAffility() {
+  vector<int> current_cpu = GetCurrentCpuAffinity();
   return GetSocketAffility(current_cpu);
 }
 

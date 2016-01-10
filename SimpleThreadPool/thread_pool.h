@@ -29,7 +29,7 @@ class ThreadPool {
   ThreadPool();
   virtual ~ThreadPool();
 
-  bool ThreadPoolInit(int thread_count_in_pool);
+  bool Init(int thread_count_in_pool);
   static void *ThreadExec(void *arg);
   void *ThreadExecWithCond(void *arg);
   void BindCpu();

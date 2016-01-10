@@ -8,6 +8,7 @@
 #ifndef SIMPLETHREADPOOL_TASK_H_
 #define SIMPLETHREADPOOL_TASK_H_
 
+#include <vector>
 #include "./cpu_scheduler.h"
 #include "./logs.h"
 
@@ -30,30 +31,50 @@ class Task {
 
 class NumaSensitiveTask : public Task {
  public:
-  NumaSensitiveTask(void_function f, void *a, int node_index)
-      : Task(f, a), node_index_(node_index) {}
+  NumaSensitiveTask(void_function f, void *a, int node_index) : Task(f, a) {
+    if (node_index < 0 || node_index >= GetNumberOfSockets()) {
+      Logs::elog("Socket index %d is over range, expect 0 to %d ", node_index,
+                 GetNumberOfSockets());
+      assert(false);
+    }
+    node_index_.push_back(node_index);
+  }
+  NumaSensitiveTask(void_function f, void *a, vector<int> nodes)
+      : Task(f, a), node_index_(nodes) {
+    for (int i = 0; i < node_index_.size(); ++i) {
+      if (node_index_[i] < 0 || node_index_[i] >= GetNumberOfSockets()) {
+        Logs::elog("Socket index %d is over range, expect 0 to %d ",
+                   node_index_[i], GetNumberOfSockets());
+        assert(false);
+      }
+    }
+  }
   virtual ~NumaSensitiveTask() throw() {}
 
   virtual void Run();
   void BindSocket(int node_index);
 
  private:
-  int node_index_;
+  vector<int> node_index_;
 };
 
 class CpuSensitiveTask : public Task {
  public:
-  CpuSensitiveTask(void_function f, void *a, int cpu_index)
+  CpuSensitiveTask(void_function f, void *a, vector<int> cpu_index)
       : Task(f, a), cpu_index_(cpu_index) {
-    if (cpu_index_ < 0 || cpu_index_ >= GetNumberOfCpus())
-      Logs::elog("CPU index %d is over range, expect 0 to %d ", cpu_index_,
-                 GetNumberOfCpus());
+    for (int i = 0; i < cpu_index_.size(); ++i) {
+      if (cpu_index_[i] < 0 || cpu_index_[i] >= GetNumberOfCpus()) {
+        Logs::elog("CPU index %d is over range, expect 0 to %d ", cpu_index_[i],
+                   GetNumberOfCpus());
+        assert(false);
+      }
+    }
   }
 
   virtual void Run();
 
  private:
-  int cpu_index_;
+  vector<int> cpu_index_;
 };
 
 class DestroyTask : public Task {
