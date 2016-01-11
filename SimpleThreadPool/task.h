@@ -34,7 +34,7 @@ class NumaSensitiveTask : public Task {
   NumaSensitiveTask(void_function f, void *a, int node_index) : Task(f, a) {
     if (node_index < 0 || node_index >= GetNumberOfSockets()) {
       Logs::elog("Socket index %d is over range, expect 0 to %d ", node_index,
-                 GetNumberOfSockets());
+                 GetNumberOfSockets() - 1);
       assert(false);
     }
     node_index_.push_back(node_index);
@@ -44,7 +44,7 @@ class NumaSensitiveTask : public Task {
     for (int i = 0; i < node_index_.size(); ++i) {
       if (node_index_[i] < 0 || node_index_[i] >= GetNumberOfSockets()) {
         Logs::elog("Socket index %d is over range, expect 0 to %d ",
-                   node_index_[i], GetNumberOfSockets());
+                   node_index_[i], GetNumberOfSockets() - 1);
         assert(false);
       }
     }
@@ -65,7 +65,7 @@ class CpuSensitiveTask : public Task {
     for (int i = 0; i < cpu_index_.size(); ++i) {
       if (cpu_index_[i] < 0 || cpu_index_[i] >= GetNumberOfCpus()) {
         Logs::elog("CPU index %d is over range, expect 0 to %d ", cpu_index_[i],
-                   GetNumberOfCpus());
+                   GetNumberOfCpus() - 1);
         assert(false);
       }
     }
@@ -73,7 +73,7 @@ class CpuSensitiveTask : public Task {
   CpuSensitiveTask(void_function f, void *a, int cpu_index) : Task(f, a) {
     if (cpu_index < 0 || cpu_index >= GetNumberOfCpus()) {
       Logs::elog("CPU index %d is over range, expect 0 to %d ", cpu_index,
-                 GetNumberOfCpus());
+                 GetNumberOfCpus() - 1);
       assert(false);
     }
     cpu_index_.push_back(cpu_index);
