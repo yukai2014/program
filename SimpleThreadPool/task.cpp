@@ -12,14 +12,16 @@
 // #define SPECIFY_CPU
 
 /*
- *  get old binded CPU and bind new CPU in specify socket,
+ *  get old binded CPUs and bind new CPUs in specify sockets,
  *  run function f,
- *  bind to old CPU again
+ *  bind to old CPUs again
  */
 void NumaSensitiveTask::Run() {
   vector<int> old_cpu = GetCurrentCpuAffinity();
-// Logs::log("Before bind socket:\tCurrent cpu is: %d\tCurrent node is: %d\n",
-// getCurrentCpuAffility(), getCurrentSocketAffility());
+
+  std::cout << "before setting, Current cpu is: ";
+  for (auto it : old_cpu) std::cout << it << " ";
+  std::cout << std::endl;
 #ifdef SPECIFY_CPU
   int cpu_index = GetNextCPUinSocket(node_index_);
   SetCpuAffinity(cpu_index);
@@ -29,16 +31,19 @@ void NumaSensitiveTask::Run() {
   for (int i = 0; i < node_index_.size(); ++i)
     numa_bitmask_setbit(bm, node_index_[i]);
 
-  // bind to the first CPU in this numa node, same as numa_run_on_node()
+  // bind to this NUMA nodes, ignoring CPU affinities
   numa_run_on_node_mask_all(bm);
-// Logs::log("After numa_run_on_node_mask_all");
 #endif
+  std::cout << "after setting, Current cpu is: ";
+  for (auto it : GetCurrentCpuAffinity()) std::cout << it << " ";
+  std::cout << std::endl;
   Task::Run();
 
   // restore old binding
   SetCpuAffinity(old_cpu);
-  // Logs::log("After restoring:\tCurrent cpu is: %d\tCurrent node is: %d\n",
-  // getCurrentCpuAffility(), getCurrentSocketAffility());
+  std::cout << "after restoring, Current cpu is: ";
+  for (auto it : GetCurrentCpuAffinity()) std::cout << it << " ";
+  std::cout << std::endl;
 }
 
 void NumaSensitiveTask::BindSocket(int node_index) {}
@@ -46,7 +51,7 @@ void NumaSensitiveTask::BindSocket(int node_index) {}
 void CpuSensitiveTask::Run() {
   vector<int> old_cpu = GetCurrentCpuAffinity();
   std::cout << "before setting, Current cpu is: ";
-  for (auto it : GetCurrentCpuAffinity()) std::cout << it << "\t";
+  for (auto it : GetCurrentCpuAffinity()) std::cout << it << " ";
   std::cout << std::endl;
   if (false == SetCpuAffinity(cpu_index_)) {
     Logs::elog("failed to set affinity with CPU: ");
@@ -55,13 +60,13 @@ void CpuSensitiveTask::Run() {
     Logs::elog("\n");
   }
   std::cout << "after setting, Current cpu is: ";
-  for (auto it : GetCurrentCpuAffinity()) std::cout << it << "\t";
+  for (auto it : GetCurrentCpuAffinity()) std::cout << it << " ";
   std::cout << std::endl;
   Task::Run();
 
   // restore old binding
   SetCpuAffinity(old_cpu);
   std::cout << "after restoring, Current cpu is: ";
-  for (auto it : GetCurrentCpuAffinity()) std::cout << it << "\t";
+  for (auto it : GetCurrentCpuAffinity()) std::cout << it << " ";
   std::cout << std::endl;
 }

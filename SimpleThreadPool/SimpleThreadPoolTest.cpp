@@ -3,16 +3,6 @@
  *
  *  Created on: 2014-8-18
  *      Author: imdb
- *
- *
- *      how to use: command--->	g++ -lpthread -g -o test_zl
- *ThreadPoolTest.cpp Thread_Pool.cpp Test.cpp Thread_Pool.cpp Thread_Pool.h -D
- *zl
- *      									g++
- *-lpthread
- *-g
- *-o test_yk ThreadPoolTest.cpp Thread_Pool.cpp Test.cpp Thread_Pool.cpp
- *Thread_Pool.h -D yk
  */
 
 #include <sys/time.h>
@@ -41,6 +31,7 @@ void *ShowSocketAndCpu(void *no_means) {
   //  while (1) {
   //    temp += temp % 10;
   //  }
+  return NULL;
 }
 
 int main() {
@@ -54,7 +45,7 @@ int main() {
   {
     pthread_t p;
     pthread_create(&p, NULL, ShowSocketAndCpu, NULL);
-    sleep(5);
+    usleep(500);
   }
 
   ThreadPool *tp = new ThreadPool();
@@ -63,7 +54,7 @@ int main() {
   }
   while (task_count--) {
     tp->AddTask(ShowSocketAndCpu, NULL);
-    sleep(1);
+    usleep(100);
   }
   tp->Destroy(tp);
 
@@ -75,7 +66,7 @@ int main() {
   int cpu = 0;
   for (int i = 0; i < 3; ++i) {
     tp->AddTaskInCpu(ShowSocketAndCpu, NULL, (++cpu) % cpu_num);
-    sleep(1);
+    usleep(100);
   }
 
   tp->Destroy(tp);
@@ -89,7 +80,7 @@ int main() {
   int node = 0;
   for (int i = 0; i < task_count; ++i) {
     tp->AddTaskInSocket(ShowSocketAndCpu, NULL, (node++) % node_num);
-    sleep(1);
+    usleep(100);
   }
   tp->Destroy(tp);
 
