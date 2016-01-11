@@ -13,6 +13,8 @@
 #include "./thread_pool.h"
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <vector>
+
 #include "./task.h"
 #include "../common/memory_usage.h"
 
@@ -83,8 +85,24 @@ void ThreadPool::AddTaskInSocket(void_function f, void *a, int socket_index) {
   AddTask(task);
 }
 
+void ThreadPool::AddTaskInSocket(void_function f, void *a,
+                                 vector<int> socket_indexs) {
+  if (numa_available() < 0) {
+    Logs::elog("numa_* functions unavailable\n");
+    assert(false);
+  }
+  NumaSensitiveTask *task = new NumaSensitiveTask(f, a, socket_indexs);
+  AddTask(task);
+}
+
 void ThreadPool::AddTaskInCpu(void_function f, void *arg, int cpu_index) {
   CpuSensitiveTask *task = new CpuSensitiveTask(f, arg, cpu_index);
+  AddTask(task);
+}
+
+void ThreadPool::AddTaskInCpu(void_function f, void *arg,
+                              vector<int> cpu_indexs) {
+  CpuSensitiveTask *task = new CpuSensitiveTask(f, arg, cpu_indexs);
   AddTask(task);
 }
 

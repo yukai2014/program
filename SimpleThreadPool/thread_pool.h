@@ -38,7 +38,9 @@ class ThreadPool {
   // destructor function
   void AddTask(void_function f, void *a);
   void AddTaskInSocket(void_function f, void *a, int socket_index);
+  void AddTaskInSocket(void_function f, void *a, vector<int> socket_indexs);
   void AddTaskInCpu(void_function f, void *arg, int cpu_index);
+  void AddTaskInCpu(void_function f, void *arg, vector<int> cpu_indexs);
   void AddDestroyTask();
   void Destroy(ThreadPool *tp);
 
