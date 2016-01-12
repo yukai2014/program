@@ -66,11 +66,12 @@ class ThreadPool {
   int base_thread_count_;
   int free_thread_count_;
   int max_thread_count_;
-  int current_thread_count_;
+  volatile int current_thread_count_;
   //  pthread_mutex_t free_thread_count_lock_;
 
   int task_count_;
   int undo_task_count_;
+  bool is_destroy_ = false;
   //  pthread_mutex_t undo_task_count_lock_;
 };
 

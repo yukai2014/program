@@ -30,7 +30,8 @@ ThreadPool::~ThreadPool() {
 }
 
 bool ThreadPool::Init(int thread_count_in_pool) {
-  bool success = true;
+  is_destroy_ = false;
+  current_thread_count_ = 0;
   base_thread_count_ = thread_count_in_pool;
   pthread_mutex_init(&task_queue_lock_, NULL);
   sem_init(&undo_task_sem_, 0, 0);  // init semaphore
@@ -43,13 +44,13 @@ bool ThreadPool::Init(int thread_count_in_pool) {
 
   if (pthread_create(&monitor_thread_, NULL, MonitorThreadExec, this) !=
       0) {  // if any failed, return false
-    cout << "ERROR: create monitor thread failed!" << endl;
+    OUTPUTERROR("ERROR: create monitor thread failed!");
     return false;
   }
   for (int i = 0; i < base_thread_count_; ++i) {
     if (pthread_create(&thread_list_[i], NULL, ThreadExec, this) !=
         0) {  // if any failed, return false
-      cout << "ERROR: create pthread failed!" << endl;
+      OUTPUTERROR("ERROR: create thread failed!");
       return false;
     }
     ++current_thread_count_;
@@ -129,68 +130,76 @@ void ThreadPool::HandleTask(ThreadPool *thread_pool) {
 }
 
 void *ThreadPool::ThreadExec(void *arg) {
-  Logs::log("a new thread is added into pool.");
+  Logs::log("a new thread(id=%ld,offset=%lx) is added into pool.\n",
+            syscall(__NR_gettid), pthread_self());
   ThreadPool *thread_pool = static_cast<ThreadPool *>(arg);
   Task *task = NULL;
 
   // every thread execute a endless loop, waiting for task, and exit when
   // receive a task with end member of 'true'
   while (1) {
-    HandleTask(thread_pool);
+    thread_pool->HandleTask(thread_pool);
   }
   pthread_exit(NULL);
   return NULL;
 }
 
 void *ThreadPool::TempThreadExec(void *arg) {
-  Logs::log("a temporary thread is created.");
+  Logs::log("a temporary thread(id=%ld,offset=%lx) is created.\n",
+            syscall(__NR_gettid), pthread_self());
   ThreadPool *thread_pool = static_cast<ThreadPool *>(arg);
   Task *task = NULL;
 
-  HandleTask(thread_pool);
+  thread_pool->HandleTask(thread_pool);
   return NULL;
 }
 
 void *ThreadPool::MonitorThreadExec(void *arg) {
-  usleep(500 * 1000);
-  ThreadPool *tp = static_cast<ThreadPool *>(arg);
-  if (NULL == tp->thread_list_) return NULL;  // which means pool is destroyed
-  static int too_many_task_times = 0;
-  static int expand_thread_times = 0;
-  int undo_task_count;
-  sem_getvalue(&(tp->undo_task_sem_), &undo_task_count);
+  while (true) {
+    usleep(500 * 1000);
+    ThreadPool *tp = static_cast<ThreadPool *>(arg);
+    if (tp->is_destroy_) return NULL;  // which means pool is destroyed
+    static int too_many_task_times = 0;
+    static int expand_thread_times = 0;
+    int undo_task_count;
+    sem_getvalue(&(tp->undo_task_sem_), &undo_task_count);
+    Logs::log("undo task count: ----- %d-------%d ------%d\n", undo_task_count,
+              too_many_task_times, expand_thread_times);
 
-  if (undo_task_count > 0) {
-    if (++too_many_task_times > 3) {
-      int to_expand_thread_count = (undo_task_count + 1) / 2;
-      if (++expand_thread_times > 3 &&
-          current_thread_count_ < base_thread_count_ * 2 - 1) {
-        if (NULL == tp->thread_list_)
-          return NULL;  // which means pool is destroyed
-        pthread_create(&thread_list_[++current_thread_count_], NULL, ThreadExec,
-                       tp);
-        expand_thread_times = 0;
-        --to_expand_thread_count;  // because of adding one thread perpetually
+    if (undo_task_count > 0) {
+      if (++too_many_task_times > 3) {
+        int to_expand_thread_count = (undo_task_count + 1) / 2;
+        if (++expand_thread_times >= 3 &&
+            tp->current_thread_count_ < tp->base_thread_count_ * 2) {
+          if (tp->is_destroy_) return NULL;  // which means pool is destroyed
+          pthread_create(&tp->thread_list_[tp->current_thread_count_++], NULL,
+                         ThreadExec, tp);
+          --to_expand_thread_count;  // because of adding one thread perpetually
+        }
+        expand_thread_times %= 3;
+        for (int i = 0; i < to_expand_thread_count; ++i) {
+          if (tp->is_destroy_) return NULL;  // which means pool is destroyed
+          pthread_t temp;
+          pthread_create(&temp, NULL, TempThreadExec, tp);
+        }
+        too_many_task_times = 0;
       }
-      for (int i = 0; i < to_expand_thread_count; ++i) {
-        if (NULL == tp->thread_list_)
-          return NULL;  // which means pool is destroyed
-        pthread_t temp;
-        pthread_create(&temp, NULL, TempThreadExec, tp);
-      }
+    } else {
       too_many_task_times = 0;
+      expand_thread_times = 0;
     }
-  } else {
-    too_many_task_times = 0;
-    expand_thread_times = 0;
   }
-
-  return NULL;
 }
 
 void ThreadPool::Destroy(ThreadPool *tp) {
+  is_destroy_ = true;
+  while (!tp->task_queue_.empty()) {
+    Task *temp = tp->task_queue_.front();
+    tp->task_queue_.pop();
+    DeletePtr(temp);
+  }
   // destroy every thread by sending destroy task to everyone
-  for (int i = 0; i < tp->current_thread_count_; ++i) {
+  for (int i = 0; i < 2 * tp->current_thread_count_; ++i) {
     tp->AddDestroyTask();
   }
 #ifndef UNBLOCKED_JOIN
@@ -206,5 +215,6 @@ void ThreadPool::Destroy(ThreadPool *tp) {
   }
   sem_destroy(&tp->undo_task_sem_);
   pthread_mutex_destroy(&tp->task_queue_lock_);
+  Logs::log("waiting monitor thread exiting...\n");
   pthread_join(tp->monitor_thread_, NULL);
 }

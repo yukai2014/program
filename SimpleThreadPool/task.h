@@ -8,6 +8,8 @@
 #ifndef SIMPLETHREADPOOL_TASK_H_
 #define SIMPLETHREADPOOL_TASK_H_
 
+#include <sys/syscall.h>
+#include <unistd.h>
 #include <vector>
 #include "./cpu_scheduler.h"
 #include "./logs.h"
@@ -89,7 +91,8 @@ class DestroyTask : public Task {
   DestroyTask() : Task(NULL, NULL) {}
   ~DestroyTask() throw() {}
   void Run() {
-    Logs::log("pthread_exit...\n");
+    Logs::log("thread(id=%ld,offset=%lx) exit...\n", syscall(__NR_gettid),
+              pthread_self());
     pthread_exit(NULL);
   }
 };

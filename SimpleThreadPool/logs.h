@@ -13,32 +13,27 @@
 #include <errno.h>
 #include <string.h>
 
-
-#define OUTPUTERROR(a) cout<<"ERROR:"<<strerror(errno)<<"."<<a<<endl
+#define OUTPUTERROR(a) cout << "ERROR:" << strerror(errno) << "." << a << endl
 
 #define DEBUG
 
-class Logs
-{
-public:
-	static void log(const char *format, ...){
-	#ifdef DEBUG
-		va_list arg;
-		va_start(arg, format);
-		vprintf(format, arg);
-		va_end(arg);
-	#endif
-	}
+class Logs {
+ public:
+  static void log(const char *format, ...) {
+#ifdef DEBUG
+    va_list arg;
+    va_start(arg, format);
+    vprintf(format, arg);
+    va_end(arg);
+#endif
+  }
 
-	static void elog(const char *format, ...){
-	#ifdef DEBUG
-		va_list arg;
-		va_start(arg, format);
-		vprintf(format, arg);
-		va_end(arg);
-	#endif
-	}
+  static void elog(const char *format, ...) {
+    va_list arg;
+    va_start(arg, format);
+    vprintf(format, arg);
+    va_end(arg);
+  }
 };
-
 
 #endif /* LOGS_H_ */

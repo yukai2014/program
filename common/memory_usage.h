@@ -31,7 +31,7 @@
 #include <stdlib.h>
 
 template <typename T>
-inline void DeletePtr(T* p) {
+inline void DeletePtr(T*& p) {
   delete p;
   p = NULL;
 }
