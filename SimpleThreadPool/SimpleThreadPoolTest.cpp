@@ -34,6 +34,11 @@ void *ShowSocketAndCpu(void *no_means) {
   usleep(1200 * 1000);
   return NULL;
 }
+void *NewThreadAndSleepForever(void *arg) {
+  ThreadPool *tp = static_cast<ThreadPool *>(arg);
+  tp->AddTask(ShowSocketAndCpu, NULL);
+  while (1) sleep(100);
+}
 
 int main() {
   int task_count = 4;
@@ -82,6 +87,20 @@ int main() {
   int node = 0;
   for (int i = 0; i < task_count; ++i) {
     tp->AddTaskInSocket(ShowSocketAndCpu, NULL, (node++) % node_num);
+    usleep(i % 5 * 100 * 1000);
+  }
+  sleep(20);
+  tp->Destroy(tp);
+
+  cout << "===========================deadlock" << endl;
+  if (tp->Init(thread_count) == 0) {
+    cout << "init failed" << endl;
+  }
+  task_count = 40;
+  node_num = GetNumberOfSockets();
+  node = 0;
+  for (int i = 0; i < task_count; ++i) {
+    tp->AddTaskInSocket(NewThreadAndSleepForever, tp, (node++) % node_num);
     usleep(i % 5 * 100 * 1000);
   }
   sleep(20);

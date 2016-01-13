@@ -177,7 +177,8 @@ void *ThreadPool::MonitorThreadExec(void *arg) {
           --to_expand_thread_count;  // because of adding one thread perpetually
         }
         expand_thread_times %= 3;
-        for (int i = 0; i < to_expand_thread_count; ++i) {
+        for (int i = 0; i < to_expand_thread_count && i < GetNumberOfCpus() / 2;
+             ++i) {
           if (tp->is_destroy_) return NULL;  // which means pool is destroyed
           pthread_t temp;
           pthread_create(&temp, NULL, TempThreadExec, tp);
@@ -201,6 +202,9 @@ void ThreadPool::Destroy(ThreadPool *tp) {
   // destroy every thread by sending destroy task to everyone
   for (int i = 0; i < 2 * tp->current_thread_count_; ++i) {
     tp->AddDestroyTask();
+  }
+  for (int i = 0; i < tp->current_thread_count_; ++i) {
+    pthread_cancel(tp->thread_list_[i]);
   }
 #ifndef UNBLOCKED_JOIN
   for (int i = 0; i < tp->current_thread_count_; ++i) {
