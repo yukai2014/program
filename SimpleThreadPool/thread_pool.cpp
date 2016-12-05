@@ -15,6 +15,7 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <exception>
 #include <vector>
 
 #include "./task.h"
@@ -26,9 +27,15 @@
 ThreadPool::ThreadPool() {}
 
 ThreadPool::~ThreadPool() {
-  if (thread_list_ != NULL) Destroy(this);
+  try {
+    if (!is_destroy_) Destroy(this);
+  } catch (const exception &e) {
+    cout << "EXCEPTION!!! " << e.what() << endl;
+  }
 }
 
+// TODO(YUKAI): is it necessary to reserve this method rather than do these
+// works in constructor method
 bool ThreadPool::Init(int thread_count_in_pool) {
   is_destroy_ = false;
   current_thread_count_ = 0;
