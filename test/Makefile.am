@@ -1,7 +1,7 @@
 bin_PROGRAMS = tset
 
 tset_SOURCES = 		false_sharing.cpp \
-	select.cpp 		tset.cpp	\
+	select.cpp 		test.cpp	\
 	MemoryLayoutOfClass.h
 	
 test_CPPFLAGS = -fPIC  -g\

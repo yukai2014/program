@@ -4,7 +4,7 @@
 #include<sys/time.h>
 #define MaxThreadNum 32
 #define kSamplePoints 100000000
-#define kSpace 32		// >= 16 性能接近
+#define kSpace 16	// >= 16 性能接近
 void *compute_pi(void *);
 inline double WallTime();
 
@@ -27,27 +27,29 @@ int main123(void)
 //   scanf("%d", &num_threads);
    num_threads = 16;
 
-   time_start = WallTime();
+   int k = 10;
+   while (k--) {
+	   time_start = WallTime();
 
-   total_hits = 0;
-   sample_points_per_thread = kSamplePoints / num_threads;
+	   total_hits = 0;
+	   sample_points_per_thread = kSamplePoints / num_threads;
 
-   for(i=0; i<num_threads; i++)
-   {
-     hits[i][0] = i;
-     pthread_create(&p_threads[i], &attr, compute_pi, (void *)&hits[i]);
+	   for(i=0; i<num_threads; i++)
+	   {
+		   hits[i][0] = i;
+		   pthread_create(&p_threads[i], &attr, compute_pi, (void *)&hits[i]);
+	   }
+
+	   for(i=0; i<num_threads; i++)
+	   {
+		   pthread_join(p_threads[i], NULL);
+		   total_hits += hits[i][0];
+	   }
+
+	   double pi = 4.0 * (double)total_hits / kSamplePoints;
+	   time_end = WallTime();
+	   printf("Elasped time: %lf, Pi: %lf\n", time_end - time_start, pi);
    }
-
-   for(i=0; i<num_threads; i++)
-   {
-     pthread_join(p_threads[i], NULL);
-     total_hits += hits[i][0];
-   }
-
-   double pi = 4.0 * (double)total_hits / kSamplePoints;
-   time_end = WallTime();
-   printf("Elasped time: %lf, Pi: %lf\n", time_end - time_start, pi);
-
    return 0;
 
 }
